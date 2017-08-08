@@ -95,7 +95,25 @@ public class EncryptionEngine {
         return encrypt(replaceExtra(str));
     }
     public String getSimpleEncryption(String str){
-        return hash(replaceExtra(str));
+        if (!opened){
+            open(true);
+        }
+        if (opened){
+            str = replaceExtra(str);
+            String hash = "";
+            List<String> list = new ArrayList<>(Arrays.asList(characters));
+            for (int a = 0; a<str.length(); a++){
+                try{
+                    hash += cipher[a%list.size()][list.indexOf(str.substring(a, a+1))];
+                }catch(ArrayIndexOutOfBoundsException e){
+                    System.out.println(str);
+                    System.out.println(str.substring(a, a+1));
+                    System.exit(1);
+                }
+            }
+            return hash;
+        }
+        return "Failed to Encrypt - "+str;
     }
     public String getAdvancedEncryption(String str){
         return encrypt(hash(replaceExtra(str)));
@@ -176,8 +194,26 @@ public class EncryptionEngine {
     public String getDecryption(String str){
         return returnNormal(decrypt(str));
     }
-    public String getSimpleDecryption(String str){
-        return returnNormal(unhash(str));
+    public String getSimpleDecryption(String hash){
+        if (!opened){
+            open(true);
+        }
+        if (opened){
+            String str = "";
+            List<String> list = new ArrayList<>(Arrays.asList(characters));
+            for (int a = 0; a<hash.length(); a++){
+                int mod = a%list.size();
+                String c = hash.substring(a, a+1);
+                for (int b = 0; b<cipher.length; b++){
+                    if (cipher[mod][b].equals(c)){
+                        str += list.get(b);
+                        break;
+                    }
+                }
+            }
+            return returnNormal(str);
+        }
+        return "Failed to Decrypt - "+hash;
     }
     public String getAdvancedDecryption(String str){
         return returnNormal(unhash(decrypt(str)));
@@ -243,46 +279,43 @@ public class EncryptionEngine {
         return "Failed to Decrypt";
     }
 
-    private String hash(String str){
+    private String hash(String str){ // Unidirectional Hash algorithm.
         if (!opened){
             open(true);
         }
         if (opened){
             String hash = "";
-            List<String> list = new ArrayList<>(Arrays.asList(characters));
-            for (int a = 0; a<str.length(); a++){
-                try{
-                    hash += cipher[a%list.size()][list.indexOf(str.substring(a, a+1))];
-                }catch(ArrayIndexOutOfBoundsException e){
-                    System.out.println(str);
-                    System.out.println(str.substring(a, a+1));
-                    System.exit(1);
+            int start = str.length();
+            int[] indices = null;
+            size = 15;
+            while (indices == null){
+                if (start <= size){
+                    indices = new int[size];
+                    break;
                 }
+                size += 5;
             }
-            return hash;
+            if (indices != null){
+                for (int i = 0; i<str.length(); i++){
+                    indices[i] = Search.indexOf(characters, str.substring(i, i+1));
+                    start += indices[i];
+                }
+                for (int i = str.length(); i<indices.length; i++){
+                    indices[i] = indices[i%str.length()];   
+                    start += indices[i];
+                }
+                String hash = "";
+                for (int i : indices){
+                    start += i;
+                    if (start >= characters.length){
+                        start %= characters.length;
+                    }
+                    hash += cipher[start][i];
+                }
+                return hash;
+            }
         }
         return "Could not Hash - "+str;
-    }
-    private String unhash(String hash){
-        if (!opened){
-            open(true);
-        }
-        if (opened){
-            String str = "";
-            List<String> list = new ArrayList<>(Arrays.asList(characters));
-            for (int a = 0; a<hash.length(); a++){
-                int mod = a%list.size();
-                String c = hash.substring(a, a+1);
-                for (int b = 0; b<cipher.length; b++){
-                    if (cipher[mod][b].equals(c)){
-                        str += list.get(b);
-                        break;
-                    }
-                }
-            }
-            return str;
-        }
-        return "Could not Unhash - "+hash;
     }
 
     final private String[] forbidden = {"\"", "#", "*", "/", ":", "<", ">", "?", "\\", "|"};
