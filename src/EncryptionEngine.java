@@ -12,99 +12,145 @@ import java.util.List;
  */
 public class EncryptionEngine {
 
+    public static void main(String[] args){
+
+        EncryptionEngine engine = new EncryptionEngine("passwords");
+
+//        System.out.println(engine.hash("password"));
+//        String encryption = engine.getSimpleEncryption("password");
+//        System.out.println(encryption+" = "+engine.getSimpleDecryption(encryption));
+//        for (int i = 0; i<2; i++){
+//            encryption = engine.getEncryption("password");
+//            System.out.println(encryption+" = "+engine.getDecryption(encryption));
+//            encryption = engine.getAdvancedEncryption("password");
+//            System.out.println(encryption+" = "+engine.getAdvancedDecryption(encryption));
+//        }
+
+//        for (int i = 51; i<=144; i++){
+//            engine.generateRandomKey("./src/Resources/Key"+i+".txt");
+//        }
+    }
+
+    private Key privateKey = null;
+    private static char[] characters = null;
+    private static List<Key> keys = new ArrayList<>();
+
+    public EncryptionEngine(){
+        loadCharacters();
+        loadKeys();
+    }
+    public EncryptionEngine(String passphrase){
+        this();
+
+        if (keys != null && characters != null && passphrase.length()>0 && passphrase.length()<=characters.length){
+            int[] indices = new int[characters.length];
+            char[] passphraseArray = passphrase.toCharArray();
+            for (int i = 0; i<passphraseArray.length; i++){
+                indices[i] = Search.binarySearch(characters, passphraseArray[i]);
+            }
+            int sum = 0;    for (int i : indices){  sum += i; }
+            if (sum > keys.size()){
+                sum %= keys.size();
+            }
+
+            passphrase = hash(passphrase, keys.get(sum));
+
+            for (int i = passphrase.length(); passphrase.length()<characters.length; i++){
+                if (i >= characters.length){
+                    i %= characters.length;
+                }
+                char newcharacter = keys.get(sum).getTable()[sum][i];
+                passphrase += String.valueOf(newcharacter);
+                sum += Search.binarySearch(characters, newcharacter);
+                if (sum >= keys.size()){
+                    sum %= keys.size();
+                }
+            }
+            passphraseArray = passphrase.toCharArray();
+            List<char[]> ciphers = new ArrayList<>();
+            ciphers.add(generateSequence(characters, passphraseArray));
+            for (int i = 0; i<characters.length; i++){
+                ciphers.add(generateSequence(characters, ciphers.get(i)));
+            }
+            privateKey = new Key(ciphers);
+        }
+    }
+
+    public char[] getCharacters(){
+        if (characters == null){
+            loadCharacters();
+        }
+        return characters;
+    }
+    public void loadCharacters(){
+        try{
+            BufferedReader br = new BufferedReader (new InputStreamReader(getClass().getResourceAsStream(resourceDirectory+"All Characters"+fileFormat), "UTF-8"));
+            String line = br.readLine();
+            characters = line.toCharArray();
+            Arrays.sort(characters);
+        }catch (IOException e){}
+    }
+    public List<Key> getKeys(){
+        if (keys.isEmpty()){
+            loadKeys();
+        }
+        return keys;
+    }
+    public void loadKeys(){
+        int keyNumber = 1;
+        try {
+            BufferedReader br = new BufferedReader(new InputStreamReader(getClass().getResourceAsStream(resourceDirectory + "Key" + (keyNumber++) + fileFormat), "UTF-8"));
+            while (br != null) {
+                keys.add(new Key(br));
+                br = new BufferedReader(new InputStreamReader(getClass().getResourceAsStream(resourceDirectory + "Key" + (keyNumber++) + fileFormat), "UTF-8"));
+            }
+        } catch (IOException e) {} catch (NullPointerException e) {}
+    }
+
+    public char[] generateSequence(char[] characters, char[] previousSequence){
+        if (characters.length == previousSequence.length){
+            List<Character> list = new ArrayList<>();
+            for (char c : characters){
+                list.add(c);
+            }
+            int index = Search.binarySearch(characters, previousSequence[3]);
+            char[] newSequence = new char[previousSequence.length];
+            for (int i = 0; i<newSequence.length; i++){
+                index += Search.binarySearch(characters, previousSequence[i]);
+                if (index >= list.size()){
+                    index %= list.size();
+                }
+                newSequence[i] = list.remove(index);
+            }
+            return newSequence;
+        }
+        return null;
+    }
+
+    public static final String fileFormat = ".txt";
+    public static final String resourceDirectory = "Resources/";
+
     public static final String keyName = "ΞYΟlρLαβzX";
     public static final String settingsName = "-$aCνjVehE";
     public static final String salt = "σΣ#~5";
     public static final String backupEnd = "zβ2yΡΛp";
-    public static final String fileFormat = ".txt";
     public static final String defaultKey = "Key";
     public static final String publicKeyName = "Pε[μjlju-Ρ";
-    public static final String privateKey = "Private Key";
 
     private static String defaultPath = "./Vault Files/";
-
-    public EncryptionEngine(){
-        open(true);
-    }
-    public EncryptionEngine(boolean extra){
-        open(extra);
-    }
-    public EncryptionEngine(String path){
-        loadKey(IO.filereader(path));
-    }
-    public EncryptionEngine(BufferedReader br){
-        loadKey(br);
-    }
-
-    private boolean opened = false;
-
-    private String[] characters;
-
-    private String[][] cipher;
-
-    private String publicKey = "";
-
-    private void open(boolean useDefaultKey){
-        if (!opened){
-            BufferedReader br = null;
-            try {
-                if (!useDefaultKey){
-                    try{
-                        br = new BufferedReader (new FileReader(defaultPath+keyName+fileFormat));
-                        if (br.readLine() == null){
-                            br = new BufferedReader (new InputStreamReader(getClass().getResourceAsStream(defaultKey+fileFormat), "UTF-8"));
-                        }
-                        else{
-                            br = new BufferedReader (new FileReader(defaultPath+keyName+fileFormat));
-                        }
-                    } catch (FileNotFoundException e){
-                        br = new BufferedReader (new InputStreamReader(getClass().getResourceAsStream("Resources/"+defaultKey+fileFormat), "UTF-8"));
-                    } catch (IOException ex) {
-                        br = new BufferedReader (new InputStreamReader(getClass().getResourceAsStream("Resources/"+defaultKey+fileFormat), "UTF-8"));
-                    }
-                }
-                else{
-                    br = new BufferedReader (new InputStreamReader(getClass().getResourceAsStream("Resources/"+defaultKey+fileFormat), "UTF-8"));
-                }
-            } catch (UnsupportedEncodingException | NullPointerException ex) {}
-            if (br == null){
-                return;
-            }
-            loadKey(br);
-//            }
-        }
-    }
-    private void loadKey(BufferedReader br){
-        try{
-            List<String> lines = new ArrayList<>();
-            String line = br.readLine();
-            while (line != null){
-                lines.add(Search.replace(line, "\uFFFD", "",    " ", ""));
-                line = br.readLine();
-            }
-            characters = lines.get(0).split("");
-            cipher = new String[characters.length][characters.length];
-            for (int a = 1; a<lines.size(); a++){
-                cipher[a-1] = lines.get(a).split("");
-            }
-            opened = true;
-        }catch(IOException e){}
-    }
 
     public String getEncryption(String str){
         return encrypt(replaceExtra(str));
     }
     public String getSimpleEncryption(String str){
-        if (!opened){
-            open(true);
-        }
-        if (opened){
+        if (privateKey != null){
             str = replaceExtra(str);
             String hash = "";
-            List<String> list = new ArrayList<>(Arrays.asList(characters));
-            for (int a = 0; a<str.length(); a++){
+            List<Character> list = privateKey.getCharacterList();
+            char[] array = str.toCharArray();
+            for (int a = 0; a<array.length; a++){
                 try{
-                    hash += cipher[a%list.size()][list.indexOf(str.substring(a, a+1))];
+                    hash += String.valueOf(privateKey.getTable()[a%list.size()][list.indexOf(array[a])]);
                 }catch(ArrayIndexOutOfBoundsException e){
                     System.out.println(str);
                     System.out.println(str.substring(a, a+1));
@@ -116,76 +162,72 @@ public class EncryptionEngine {
         return "Failed to Encrypt - "+str;
     }
     public String getAdvancedEncryption(String str){
-        return encrypt(hash(replaceExtra(str)));
+        return encrypt(getSimpleEncryption(replaceExtra(str)));
     }
     public String replaceExtra(String str){
         str = str.trim();
         return Search.replace(str,
-                "\\uFFFD", "",    " ", "",     "/", "λ",
-                "\"", "ς",        "\n", "η",    "\r", "Γ");
+                "\\uFFFD", "",    " ", "",     "/", "λ",       "\"", "ς",        "\n", "η",    "\r", "Γ",
+                "the", "α",       "and", "β",       "tha", "γ",       "ent", "ε",       "ion", "ϵ",       "tio", "ζ",
+                "for", "θ",       "nde", "ϑ",       "has", "ι",       "nce", "κ",       "edt", "μ",       "tis", "ν",
+                "oft", "ξ",       "sth", "ο",       "men", "π",       "th", "ϖ",        "er", "ρ",        "on", "ϱ",
+                "an", "σ",        "re", "τ",        "he", "υ",        "in", "φ",        "ed", "ϕ",        "nd", "χ",
+                "ha", "ψ",        "at", "ω",        "en", "Α",        "es", "Β",        "of", "Δ",        "or", "Ε",
+                "nt", "Ζ",        "ea", "Η",        "ti", "Θ",        "to", "Ι",        "it", "Κ",        "st", "Λ",
+                "io", "Μ",        "le", "Ν",        "is", "Ξ",        "ou", "Ο",        "ar", "Π",        "as", "Ρ",
+                "de", "Σ",        "rt", "Τ",        "ve", "Υ",        "ss", "Φ",        "ee", "Χ",        "tt", "Ψ",
+                "ff", "Ω");
     }
     private String encrypt(String str){
-        if (!opened){
-            open(true);
-        }
-        if (opened){
+        if (privateKey != null){
             if (str.equals("")){
                 return "";
             }
             String key = "";
             String encrypted = "";
-            List<String> list = new ArrayList<>(Arrays.asList(characters));
+            List<Character> list = privateKey.getCharacterList();
             int length = list.size();
             int index = _Random_.randomint(0, length-1);
-            if (index%4 == 0){
-                for (int a = 0; a<str.length(); a++){
+            char[] array = str.toCharArray();
+            if (index%4 == 0 || index%4 == 1){
+                for (int a = 0; a<array.length; a++){
                     int r = _Random_.randomint(0, length-1);
-                    key += list.get(r);
+                    key += String.valueOf(list.get(r));
                     try{
-                        encrypted += cipher[r][list.indexOf(str.substring(a, a+1))];
+                        encrypted += String.valueOf(privateKey.getTable()[r][list.indexOf(array[a])]);
                     }catch(ArrayIndexOutOfBoundsException e){
-                        System.out.println("Could not Find:  \""+str.substring(a, a+1)+"\"");
+                        System.out.println("Could not Find:  \""+array[a]+"\"");
                         System.exit(1);
                     }
                 }
-                return list.get(index)+key+encrypted;
-            }
-            else if (index%4 == 1){
-                for (int a = 0; a<str.length(); a++){
-                    int r = _Random_.randomint(0, length-1);
-                    key += list.get(r);
-                    try{
-                        encrypted += cipher[r][list.indexOf(str.substring(a, a+1))];
-                    }catch(ArrayIndexOutOfBoundsException e){
-                        System.out.println("Could not Find:  \""+str.substring(a, a+1)+"\"");
-                        System.exit(1);
-                    }
+                if (index%4 == 0){
+                    return String.valueOf(list.get(index))+key+encrypted;
                 }
-                return list.get(index)+encrypted+key;
+                return String.valueOf(list.get(index))+encrypted+key;
             }
             else if (index%4 == 2){
-                for (int a = 0; a<str.length(); a++){
+                for (int a = 0; a<array.length; a++){
                     try{
-                        int r = _Random_.randomint(0, Math.min(list.size(), cipher.length)-1);
-                        encrypted += list.get(r)+cipher[r][list.indexOf(str.substring(a, a+1))];
+                        int r = _Random_.randomint(0, Math.min(list.size(), privateKey.getTable().length)-1);
+                        encrypted += String.valueOf(list.get(r))+String.valueOf(privateKey.getTable()[r][list.indexOf(array[a])]);
                     }catch(ArrayIndexOutOfBoundsException e){
-                        System.out.println("Could not Find:  \""+str.substring(a, a+1)+"\"");
+                        System.out.println("Could not Find:  \""+array[a]+"\"");
                         System.exit(1);
                     }
                 }
-                return list.get(index)+encrypted;
+                return String.valueOf(list.get(index))+encrypted;
             }
             else{
-                for (int a = 0; a<str.length(); a++){
+                for (int a = 0; a<array.length; a++){
                     try{
-                        int r = _Random_.randomint(0, Math.min(list.size(), cipher.length)-1);
-                        encrypted += cipher[r][list.indexOf(str.substring(a, a+1))]+list.get(r);
+                        int r = _Random_.randomint(0, Math.min(list.size(), privateKey.getTable().length)-1);
+                        encrypted += String.valueOf(privateKey.getTable()[r][list.indexOf(array[a])])+String.valueOf(list.get(r));
                     }catch(ArrayIndexOutOfBoundsException e){
-                        System.out.println("Could not Find:  \""+str.substring(a, a+1)+"\"");
+                        System.out.println("Could not Find:  \""+array[a]+"\"");
                         System.exit(1);
                     }
                 }
-                return list.get(index)+encrypted;
+                return String.valueOf(list.get(index))+encrypted;
             }
         }
         return "Failed to Encrypt \""+str+"\":   No Key has been loaded";
@@ -195,18 +237,15 @@ public class EncryptionEngine {
         return returnNormal(decrypt(str));
     }
     public String getSimpleDecryption(String hash){
-        if (!opened){
-            open(true);
-        }
-        if (opened){
+        if (privateKey != null){
             String str = "";
-            List<String> list = new ArrayList<>(Arrays.asList(characters));
-            for (int a = 0; a<hash.length(); a++){
+            List<Character> list = privateKey.getCharacterList();
+            char[] hashArray = hash.toCharArray();
+            for (int a = 0; a<hashArray.length; a++){
                 int mod = a%list.size();
-                String c = hash.substring(a, a+1);
-                for (int b = 0; b<cipher.length; b++){
-                    if (cipher[mod][b].equals(c)){
-                        str += list.get(b);
+                for (int b = 0; b<privateKey.getTable().length; b++){
+                    if (privateKey.getTable()[mod][b] == hashArray[a]){
+                        str += String.valueOf(list.get(b));
                         break;
                     }
                 }
@@ -216,61 +255,80 @@ public class EncryptionEngine {
         return "Failed to Decrypt - "+hash;
     }
     public String getAdvancedDecryption(String str){
-        return returnNormal(unhash(decrypt(str)));
+        return returnNormal(getSimpleDecryption(decrypt(str)));
     }
     public String returnNormal(String str){
         str = str.trim();
         return Search.replace(str,
-                "", " ",     "λ", "/",
-                "ς", "\"",    "η", "\n"     , "Γ", "\r");
+                "", " ",         "λ", "/",         "ς", "\"",        "η", "\n",        "Γ", "\r",
+                "α", "the",       "β", "and",       "γ", "tha",       "ε", "ent",       "ϵ", "ion",       "ζ", "tio",
+                "θ", "for",       "ϑ", "nde",       "ι", "has",       "κ", "nce",       "μ", "edt",       "ν", "tis",
+                "ξ", "oft",       "ο", "sth",       "π", "men",       "ϖ", "th",        "ρ", "er",        "ϱ", "on",
+                "σ", "an",        "τ", "re",        "υ", "he",        "φ", "in",        "ϕ", "ed",        "χ", "nd",
+                "ψ", "ha",        "ω", "at",        "Α", "en",        "Β", "es",        "Δ", "of",        "Ε", "or",
+                "Ζ", "nt",        "Η", "ea",        "Θ", "ti",        "Ι", "to",        "Κ", "it",        "Λ", "st",
+                "Μ", "io",        "Ν", "le",        "Ξ", "is",        "Ο", "ou",        "Π", "ar",        "Ρ", "as",
+                "Σ", "de",        "Τ", "rt",        "Υ", "ve",        "Φ", "ss",        "Χ", "ee",        "Ψ", "tt",
+                "Ω", "ff");
     }
     private String decrypt (String str){
-        if (!opened){
-            open(true);
-        }
-        if (opened){
+        if (privateKey != null){
             if (str.equals("")){
                 return "";
             }
             String decrypted = "";
-            List<String> list = new ArrayList<>(Arrays.asList(characters));
-            List<List<String>> ciphers = new ArrayList<>();
-            for (int a = 0; a<cipher.length; a++){
-                ciphers.add(Arrays.asList(cipher[a]));
-            }
+//            List<String> list = new ArrayList<>(Arrays.asList(characters));
+//            List<List<String>> ciphers = new ArrayList<>();
+//            for (int a = 0; a<cipher.length; a++){
+//                ciphers.add(Arrays.asList(cipher[a]));
+//            }
             if (str.length()%2 != 0){
-                int index = list.indexOf(str.substring(0, 1));
+                int index = Search.linearSearch(privateKey.getCharacters(), str.charAt(0));
                 str = str.substring(1);
                 if (index%4 == 0){
                     int half = str.length()/2;
-                    String key = str.substring(0, half);
-                    String encrypted = str.substring(half);
-                    for (int a = 0; a<encrypted.length(); a++){
-                        decrypted += list.get(ciphers.get(list.indexOf(key.substring(a, a+1))).indexOf(encrypted.substring(a, a+1)));
+                    char[] key = str.substring(0, half).toCharArray();
+                    char[] encrypted = str.substring(half).toCharArray();
+                    for (int a = 0; a<encrypted.length; a++){
+                        decrypted += String.valueOf(privateKey.getCharacters()[Search.linearSearch(privateKey.getTable()[Search.linearSearch(privateKey.getCharacters(), key[a])], encrypted[a])]);
+//                        decrypted += list.get(ciphers.get(list.indexOf(privateKey.substring(a, a+1))).indexOf(encrypted.substring(a, a+1)));
                     }
                 }
                 else if (index%4 == 1){
                     int half = str.length()/2;
-                    String key = str.substring(half);
-                    String encrypted = str.substring(0, half);
-                    for (int a = 0; a<encrypted.length(); a++){
-                        decrypted += list.get(ciphers.get(list.indexOf(key.substring(a, a+1))).indexOf(encrypted.substring(a, a+1)));
+                    char[] key = str.substring(half).toCharArray();
+                    char[] encrypted = str.substring(0, half).toCharArray();
+                    for (int a = 0; a<encrypted.length; a++){
+                        decrypted += String.valueOf(privateKey.getCharacters()[Search.linearSearch(privateKey.getTable()[Search.linearSearch(privateKey.getCharacters(), key[a])], encrypted[a])]);
+//                        decrypted += list.get(ciphers.get(list.indexOf(privateKey.substring(a, a+1))).indexOf(encrypted.substring(a, a+1)));
                     }
                 }
                 else if (index%4 == 2){
-                    for (int a = 0; a+1<str.length(); a+=2){
+                    char[] array = str.toCharArray();
+                    for (int a = 1; a<array.length; a+=2){
                         try{
-                            decrypted += list.get(ciphers.get(list.indexOf(str.substring(a, a+1))).indexOf(str.substring(a+1, a+2)));
+                            decrypted += String.valueOf(privateKey.getCharacters()[Search.linearSearch(privateKey.getTable()[Search.linearSearch(privateKey.getCharacters(), array[a-1])], array[a])]);
+//                            decrypted += list.get(ciphers.get(list.indexOf(str.substring(a, a+1))).indexOf(str.substring(a+1, a+2)));
                         }catch(ArrayIndexOutOfBoundsException e){
+                            System.out.println("Failed");
                             System.out.println(str);
-                            System.out.println(str.substring(a, a+2));
+                            System.out.println(str.substring(a-1, a+1));
                             System.exit(1);
                         }
                     }
                 }
                 else {
-                    for (int a = 0; a+1<str.length(); a+=2){
-                        decrypted += list.get(ciphers.get(list.indexOf(str.substring(a+1, a+2))).indexOf(str.substring(a, a+1)));
+                    char[] array = str.toCharArray();
+                    for (int a = 1; a<array.length; a+=2){
+                        try{
+                            decrypted += String.valueOf(privateKey.getCharacters()[Search.linearSearch(privateKey.getTable()[Search.linearSearch(privateKey.getCharacters(), array[a])], array[a-1])]);
+//                            decrypted += list.get(ciphers.get(list.indexOf(str.substring(a+1, a+2))).indexOf(str.substring(a, a+1)));
+                        }catch(IndexOutOfBoundsException e){
+                            System.out.println("Failed");
+                            System.out.println(str);
+                            System.out.println(str.substring(a-1, a+1));
+                            System.exit(1);
+                        }
                     }
                 }
                 return decrypted;
@@ -279,17 +337,22 @@ public class EncryptionEngine {
         return "Failed to Decrypt";
     }
 
-    private String hash(String str){ // Unidirectional Hash algorithm.
-        if (!opened){
-            open(true);
+    public String hash(String str){ // Unidirectional Hash algorithm.
+        int index = 0;
+        char[] array = str.toCharArray();
+        for (int i = 0; i<array.length; i++){
+            index += Search.binarySearch(characters, array[i]);
         }
-        if (opened){
-            String hash = "";
+        return hash(str, keys.get(index%keys.size()));
+    }
+    public String hash(String str, Key key){ // Unidirectional Hash algorithm.
+        if (key.isValidKey()){
+            str = replaceExtra(str);
             int start = str.length();
             int[] indices = null;
-            size = 15;
+            int size = 15;
             while (indices == null){
-                if (start <= size){
+                if (start < size){
                     indices = new int[size];
                     break;
                 }
@@ -297,20 +360,20 @@ public class EncryptionEngine {
             }
             if (indices != null){
                 for (int i = 0; i<str.length(); i++){
-                    indices[i] = Search.indexOf(characters, str.substring(i, i+1));
+                    indices[i] = Search.linearSearch(key.getCharacters(), str.charAt(i));
                     start += indices[i];
                 }
                 for (int i = str.length(); i<indices.length; i++){
-                    indices[i] = indices[i%str.length()];   
+                    indices[i] = indices[i%str.length()];
                     start += indices[i];
                 }
                 String hash = "";
                 for (int i : indices){
                     start += i;
-                    if (start >= characters.length){
-                        start %= characters.length;
+                    if (start >= key.getCharacters().length){
+                        start %= key.getCharacters().length;
                     }
-                    hash += cipher[start][i];
+                    hash += key.getTable()[start][i];
                 }
                 return hash;
             }
@@ -318,239 +381,41 @@ public class EncryptionEngine {
         return "Could not Hash - "+str;
     }
 
-    final private String[] forbidden = {"\"", "#", "*", "/", ":", "<", ">", "?", "\\", "|"};
+    final private char[] forbidden = {'\"', '#', '*', '/', ':', '<', '>', '?', '\\', '|'};
     public String generateRandom(int size){
-        if (!opened){
-            open(true);
-        }
         String encrypted = "";
-        if (opened) {
+        if (privateKey != null) {
             while (encrypted.length() < size) {
-                int r = _Random_.randomint(0, characters.length - 1);
-                if (Search.binarySearch(forbidden, characters[r]) == -1) {
-                    encrypted += characters[r];
+                int r = _Random_.randomint(0, privateKey.getCharacters().length - 1);
+                if (Search.binarySearch(forbidden, privateKey.getCharacters()[r]) == -1) {
+                    encrypted += privateKey.getCharacters()[r];
                 }
             }
         }
         return encrypted;
     }
 
-    public void resetDefault(){
-        File file = new File("./Vault Files/"+keyName+fileFormat);
-        if (file.exists()){
-            EncryptionEngine encrypt = new EncryptionEngine();
-            EncryptionEngine encryptdef = new EncryptionEngine(false);
-            String[] files = new File("./Vault Files").list();
-            for (int a = 0; a<files.length; a++){
-                if (files[a].endsWith(fileFormat) && !files[a].equals(keyName+fileFormat)){
-                    try{
-                        BufferedReader br = IO.filereader("./Vault Files/"+files[a]);
-                        String login = br.readLine();
-                        String data = br.readLine();
-                        br.close();
-                        PrintWriter pr = IO.printwriter("./Vault Files/"+files[a]);
-                        login = encrypt.getAdvancedDecryption(login);
-                        if (!files[a].equals(""+settingsName+fileFormat)){
-                            String[] logins = login.split(salt);
-                            logins[1] = encrypt.getSimpleDecryption(logins[1]);
-                            logins[1] = encryptdef.getSimpleEncryption(logins[1]);
-                            login = logins[0]+salt+logins[1];
-                        }
-                        login = encryptdef.getAdvancedEncryption(login);
-                        pr.println(login);
-                        if (data != null){
-                            data = encrypt.getAdvancedDecryption(data);
-                            data = encryptdef.getAdvancedEncryption(data);
-                            pr.println(data);
-                        }
-                        pr.close();
-                    }catch(IOException e){}
-                }
+    public void generateRandomKey(String path, Character... additional){
+        PrintWriter pr = IO.printwriter(path);
+        List<Character> list = new ArrayList<>();
+        for (int a = -1; a<characters.length; a++){
+            for (char c : getCharacters()){
+                list.add(c);
             }
-            if (!file.delete()){
-                PrintWriter pr = IO.printwriter(file.getPath());
-                pr.close();
-            }
-        }
-        else{
-            file = new File("./Vault Files/Backup/");
-            if (file.isDirectory()){
-                File[] files = file.listFiles();
-                for (int a = 0; a<files.length; a++){
-                    if (!files[a].getName().equals(keyName+fileFormat)){
-                        try{
-                            BufferedReader br = IO.filereader("./Vault Files/Backup/"+files[a].getName());
-                            String login = br.readLine();
-                            String data = br.readLine();
-                            PrintWriter pr = IO.printwriter("./Vault Files/"+files[a].getName().replaceAll(backupEnd, ""));
-                            pr.println(login);
-                            if (data != null){
-                                pr.println(data);
-                            }
-                            pr.close();
-                        }catch(IOException e){}
-                    }
-                }
-            }
-        }
-    }
-    public void reset(){
-        changeKeys();
-    }
-    private void changeKeys(){
-        EncryptionEngine EncryptionEngineOld = new EncryptionEngine(false);
-        boolean backup = !new File("./Vault Files/"+keyName+fileFormat).exists();
-        generatePrivateKey("./Vault Files/"+keyName+fileFormat);
-        EncryptionEngine EncryptionEngineNew = new EncryptionEngine();
-        File file = new File("./Vault Files");
-        String[] fileList = file.list();
-        file = new File("./Vault Files/Backup/");
-        file.mkdirs();
-        for (int a = 0; a<fileList.length; a++){
-            if (fileList[a].endsWith(fileFormat) && !fileList[a].equals(""+keyName+fileFormat)){
-                try{
-                    BufferedReader br = IO.filereader("./Vault Files/"+fileList[a]);
-                    String login = br.readLine();
-                    String data = br.readLine();
-                    br.close();
-                    if (backup){
-                        PrintWriter pr1 = IO.printwriter("./Vault Files/Backup/"+fileList[a].substring(0, fileList[a].length()-4)+backupEnd+fileFormat);
-                        pr1.println(login);
-                        if (!fileList[a].equals(""+settingsName+fileFormat)){
-                            pr1.println(data);
-                        }
-                        pr1.close();
-                    }
-                    PrintWriter pr2 = IO.printwriter("./Vault Files/"+fileList[a]);
-                    login = EncryptionEngineOld.getAdvancedDecryption(login);
-                    if (!fileList[a].equals(""+settingsName+fileFormat)){
-                        String[] logins = login.split(salt);
-                        logins[1] = EncryptionEngineOld.getSimpleDecryption(logins[1]);
-                        logins[1] = EncryptionEngineNew.getSimpleEncryption(logins[1]);
-                        login = logins[0]+salt+logins[1];
-                    }
-                    login = EncryptionEngineNew.getAdvancedEncryption(login);
-                    pr2.println(login);
-                    if (!fileList[a].equals(""+settingsName+fileFormat)){
-                        data = EncryptionEngineOld.getAdvancedDecryption(data);
-                        data = EncryptionEngineNew.getAdvancedEncryption(data);
-                        pr2.println(data);
-                    }
-                    pr2.close();
-                }catch(IOException e){}
-            }
-        }
-    }
-//    public void generateRandomKey(String path, String... additional){
-//        try {
-//            String line = new BufferedReader (new InputStreamReader(getClass().getResourceAsStream("Resources/All Characters"+fileFormat), "UTF-8")).readLine().replaceAll("\u00E4", "");
-//            if (!line.substring(0, 1).equals("a")){
-//                line = line.substring(1);
-//            }
-//            String[] characters = line.split("");
-//            PrintWriter pr = IO.printwriter(path);
-//            List<String> list = new ArrayList<>();
-//            for (int a = -1; a<characters.length; a++){
-//                list.addAll(Arrays.asList(characters));
-//                list.addAll(Arrays.asList(additional));
-//                while(!list.isEmpty()){
-//                    int r = _Random_.randomint(0, list.size()-1);
-//                    pr.print(list.remove(r));
-//                }
-//                pr.println();
-//            }
-//            pr.close();
-//        } catch (IOException ex) {}
-//    }
-    public void generatePrivateKey(String path, String... additional){
-        try {
-            String line = new BufferedReader (new InputStreamReader(getClass().getResourceAsStream("All Characters"+fileFormat), "UTF-8")).readLine().replaceAll("\u00E4", "");
-            if (!line.substring(0, 1).equals("a")){
-                line = line.substring(1);
-            }
-            String[] characters = line.split("");
-            List<String> list = new ArrayList<>();
-            list.addAll(Arrays.asList(characters));
             list.addAll(Arrays.asList(additional));
-            List<String> key = new ArrayList<>();
-            while (!list.isEmpty()){
+            while(!list.isEmpty()){
                 int r = _Random_.randomint(0, list.size()-1);
-                key.add(list.get(r));
-                list.remove(r);
-            }
-            list.addAll(Arrays.asList(characters));
-            list.addAll(Arrays.asList(additional));
-            List<String> row = new ArrayList<>();
-            while (!list.isEmpty()){
-                int r = _Random_.randomint(0, list.size()-1);
-                row.add(list.get(r));
-                list.remove(r);
-            }
-            List<List<String>> table = new ArrayList<>();
-            for (int a = 0; a<row.size(); a++){
-                List<String> temp = new ArrayList<>();
-                for (int b = row.size()-a; b<row.size(); b++){
-                    temp.add(row.get(b));
-                }
-                for (int b = 0; b<(row.size()-a); b++){
-                    temp.add(row.get(b));
-                }
-                table.add(temp);
-            }
-            List<List<String>> temp = new ArrayList<>();
-            temp.addAll(table);
-            table.clear();
-            while (!temp.isEmpty()){
-                int r = _Random_.randomint(0, temp.size()-1);
-                table.add(temp.get(r));
-                temp.remove(r);
-            }
-
-            PrintWriter pr = IO.printwriter(path);
-            for (int a = 0; a<key.size(); a++){
-                pr.print(key.get(a));
+                pr.print(list.remove(r));
             }
             pr.println();
-            for (int a = 0; a<table.size(); a++){
-                for (int b = 0; b<table.get(a).size(); b++){
-                    pr.print(table.get(a).get(b));
-                }
-                pr.println();
-            }
-            pr.close();
-        } catch (IOException ex) {}
-    }
-    public String getPublicKey(){
-        if (this.publicKey.equals("")){
-            try{
-                BufferedReader br = new BufferedReader (new InputStreamReader(getClass().getResourceAsStream(privateKey+fileFormat), "UTF-8"));
-                String line = br.readLine();
-                while (line != null){
-                    publicKey += hash(line)+"\n";
-                    line = br.readLine();
-                }
-            }catch(IOException e){
-                publicKey = "";
-            }
-        }
-        return this.publicKey;
-    }
-    public void printPublicKey(String path){
-        PrintWriter pr = IO.printwriter(path);
-        String[] publicKey = getPublicKey().split("\n");
-        for (String key : publicKey){
-            pr.println(key);
         }
         pr.close();
     }
     public String createSalt(int size){
         String salt = "";
-        if (!opened){
-            open(true);
-        }
-        if (opened){
+        if (privateKey != null){
             for (int a = 0; a<size; a++){
-                salt += characters[_Random_.randomint(0, characters.length-1)];
+                salt += privateKey.getCharacters()[_Random_.randomint(0, characters.length-1)];
             }
         }
         return salt;

@@ -4,12 +4,33 @@ package Tools;/*
 * and open the template in the editor.
 */
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 /**
 
 @author Antonio
 */
 public class Search {
-    
+
+    public static int linearSearch(char[] array, char item){
+        for (int i = 0; i<array.length; i++) {
+            if (array[i] == item) {
+                return i;
+            }
+        }
+        return -1;
+    }
+    public static int linearSearch(String[] array, String item){
+        for (int i = 0; i<array.length; i++) {
+            if (array[i].equals(item)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
     public static int binarySearch(String[] array, String item){
         if (array.length > 1){
             if (array[1].compareTo(array[0]) > 0){
@@ -46,6 +67,26 @@ public class Search {
         }
     }
 
+    public static boolean contains(char[] array, char item){
+        return binarySearch(array, item) != -1;
+    }
+    public static int binarySearch(char[] array, char item){
+        int low = 0;
+        int high = array.length - 1;
+
+        while (low <= high) {
+            int mid = (low + high) >>> 1;
+            int cmp = array[mid]-item;
+            if (cmp < 0) {
+                low = mid + 1;
+            } else if (cmp > 0) {
+                high = mid - 1;
+            } else {
+                return mid;
+            }
+        }
+        return -1;
+    }
 
     public static String replace(String text, String... searchReplace) {
         for (int i = 1; i<searchReplace.length; i+=2){
@@ -63,6 +104,7 @@ public class Search {
     public static String replace(String text, String searchString, String replacement) {
         return replace(text, searchString, replacement, -1);
     }
+    public static int count = 0;
     public static String replace(String text, String searchString, String replacement, int max) {
         if (text.length() == 0 || searchString.length() == 0 || replacement == null || max == 0) {
             return text;
@@ -78,6 +120,7 @@ public class Search {
         increase *= (max < 0 ? 16 : (max > 64 ? 64 : max));
         StringBuffer buf = new StringBuffer(text.length() + increase);
         while (end != -1) {
+            count++;
             buf.append(text.substring(start, end)).append(replacement);
             start = end + replLength;
             if (--max == 0) {
