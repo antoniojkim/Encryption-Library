@@ -1,4 +1,4 @@
-package Tools;
+package Encryption_Library.Tools;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;

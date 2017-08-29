@@ -1,11 +1,13 @@
-import Tools.Search;
+package Encryption_Library;
+
+import Encryption_Library.Tools.Search;
 
 /**
  * Created by Antonio on 2017-08-05.
  */
 public class EncrytionTests {
 
-    static EncryptionEngine engine = new EncryptionEngine("password");
+    static EncryptionEngine engine = new EncryptionEngine();
 
     static int numTests = 0;
 
@@ -49,7 +51,11 @@ public class EncrytionTests {
 
     public static void EncryptionTests(){
         long start = System.currentTimeMillis();
-        String[] array = {"Testing", "This is a space test", "This is a newline\ntest", "Username", "Password"};
+        String[] array = {"Testing", "This is a space test", "This is a newline\ntest", "Username", "Password",
+                "Σ",
+                "σ",
+                "σΣ#~5",
+                "antoniokσΣ#~5βρ{.,+*ΨκΞMc\u0001%Χυ4%t]ΩΠzΔ!:πHq~"};
         for (String str : array){
             EncryptionTest(str);
             AdvancedEncryptionTest(str);

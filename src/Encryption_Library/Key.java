@@ -1,4 +1,6 @@
-import Tools.Search;
+package Encryption_Library;
+
+import Encryption_Library.Tools.Search;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -12,6 +14,8 @@ public class Key {
 
     private char[] characters;
     private char[][] table;
+
+    private String salt = null;
 
     public Key(BufferedReader br){
         try{
@@ -41,6 +45,17 @@ public class Key {
 
     public boolean isValidKey(){
         return characters != null && table != null && table.length == characters.length && table[0].length == characters.length;
+    }
+
+    public String getSalt(){
+        if (salt == null || salt.length() == 0){
+            salt = String.valueOf(table[0][Search.linearSearch(characters, table[0][0])])+
+                    String.valueOf(table[1][Search.linearSearch(characters, table[1][1])])+
+                    String.valueOf(table[2][Search.linearSearch(characters, table[2][2])])+
+                    String.valueOf(table[3][Search.linearSearch(characters, table[3][3])])+
+                    String.valueOf(table[4][Search.linearSearch(characters, table[4][4])]);
+        }
+        return salt;
     }
 
     public char[] getCharacters() {
