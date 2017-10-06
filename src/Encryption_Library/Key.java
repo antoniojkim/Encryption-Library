@@ -12,6 +12,8 @@ import java.util.List;
  */
 public class Key {
 
+
+
     private char[] characters;
     private char[][] table;
 

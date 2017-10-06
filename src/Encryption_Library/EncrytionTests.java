@@ -1,6 +1,10 @@
 package Encryption_Library;
 
+import Encryption_Library.Tools.IO;
 import Encryption_Library.Tools.Search;
+
+import java.io.DataInputStream;
+import java.math.BigInteger;
 
 /**
  * Created by Antonio on 2017-08-05.
@@ -28,9 +32,9 @@ public class EncrytionTests {
 
 
 //        String[] array = {"Password", "Password", "password",
-////                "This is as secure a Password that I can think of",
-////                "This is as secure a password that I can think of",
-////                "this is as secure a password that i can come up with",
+//                "This is as secure a Password that I can think of",
+//                "This is as secure a password that I can think of",
+//                "this is as secure a password that i can come up with",
 //                "this is as secure a password that i can come up wit"};
 //        for (String str : array){
 //            String hashed = engine.hash(str);
@@ -45,27 +49,33 @@ public class EncrytionTests {
         EncryptionTests();
 
 
-        System.out.println(Search.count);
-
     }
 
     public static void EncryptionTests(){
         long start = System.currentTimeMillis();
+        symmetricEncryptionTests();
+        long end = System.currentTimeMillis();
+        System.out.println("\nA total of "+numTests+" symmetric encryption tests have passed!\n");
+        System.out.println("Took "+time(start, end)+" to complete testing\n");
+        start = System.currentTimeMillis();
+        numTests = 0;
+        publicKeyEncryptionTests();
+        end = System.currentTimeMillis();
+        System.out.println("\nA total of "+numTests+" public key encryption tests have passed!\n");
+        System.out.println("Took "+time(start, end)+" to complete testing\n");
+    }
+
+    public static void symmetricEncryptionTests(){
         String[] array = {"Testing", "This is a space test", "This is a newline\ntest", "Username", "Password",
                 "Σ",
                 "σ",
-                "σΣ#~5",
-                "antoniokσΣ#~5βρ{.,+*ΨκΞMc\u0001%Χυ4%t]ΩΠzΔ!:πHq~"};
+                "σΣ#~5"};
         for (String str : array){
             EncryptionTest(str);
             AdvancedEncryptionTest(str);
             SimpleEncryptionTest(str);
 //            MultipleEncryptionTest(str);
         }
-        long end = System.currentTimeMillis();
-
-        System.out.println("\nA total of "+numTests+" tests have passed!\n");
-        System.out.println("Took "+time(start, end)+" to complete testing\n");
     }
 
     public static void EncryptionTest(String input){
@@ -82,26 +92,7 @@ public class EncrytionTests {
             System.exit(1);
         }
     }
-//    public static void MultipleEncryptionTest(String input){
-//        String encrypted1 = engine.getSimpleEncryption(input);
-//        String encrypted2 = engine.getEncryption(encrypted1);
-//        String encrypted3 = engine.getAdvancedEncryption(encrypted2);
-//        String encrypted4 = engine.getEncryption(encrypted3);
-//        String decrypted4 = engine.getDecryption(encrypted4);
-//        String decrypted3 = engine.getAdvancedDecryption(decrypted4);
-//        String decrypted2 = engine.getDecryption(decrypted3);
-//        String decrypted1 = engine.getSimpleDecryption(decrypted2);
-//        if (input.equals(decrypted1)){
-//            numTests++;
-//        }
-//        else{
-//            System.out.println("Multiple Encryption Test Failed");
-//            System.out.println("    Input:      "+input);
-//            System.out.println("    Encrypted:  "+encrypted4);
-//            System.out.println("    Decrypted:  "+decrypted1);
-//            System.exit(1);
-//        }
-//    }
+
     public static void AdvancedEncryptionTest(String input){
         String encrypted = engine.getAdvancedEncryption(input);
         String decrypted = engine.getAdvancedDecryption(encrypted);
@@ -126,6 +117,35 @@ public class EncrytionTests {
         else{
             System.out.println("Simple Encryption Test Failed");
             System.out.println("    Input:      "+input);
+            System.out.println("    Encrypted:  "+encrypted);
+            System.out.println("    Decrypted:  "+decrypted);
+            System.exit(1);
+        }
+    }
+
+    public static void publicKeyEncryptionTests(){
+        String[] array = {
+                "vV6w3suEs6sWhp473DONoGMHMN8ALU",
+                "bQop2s3vNm8A5xQPbCwNCQSJBiRg5z",
+                "mLkkCe39oVH1fYMNgxtD8xu9vGOGzi"};
+        for (String str : array){
+            RSATest(str);
+        }
+    }
+    public static void RSATest(String input){
+        RSA decryptor = new RSA();
+        RSA encryptor = new RSA(decryptor.getPublicKey());
+        String encrypted = encryptor.encrypt(input);
+        String decrypted = decryptor.decrypt(encrypted);
+        if (input.equals(decrypted)){
+            numTests++;
+        }
+        else {
+            System.out.println("RSA Encryption Test Failed");
+            System.out.println("    Input:      "+input);
+            String[] publicKey = encryptor.getPublicKey();
+            System.out.println("    e:          "+publicKey[0]);
+            System.out.println("    N:          "+publicKey[1]);
             System.out.println("    Encrypted:  "+encrypted);
             System.out.println("    Decrypted:  "+decrypted);
             System.exit(1);

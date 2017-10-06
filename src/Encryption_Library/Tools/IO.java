@@ -40,4 +40,25 @@ public class IO {
         return null;
     }
 
+
+    public static final String byteDelimiter = "`";
+    public static String byteArrayToString(byte[] array)
+    {
+        String test = "";
+        for (byte b : array)
+        {
+            test += Byte.toString(b)+byteDelimiter;
+        }
+        return test.substring(0, test.length()-1);
+    }
+    public static byte[] byteArraySringToByteArray(String str)
+    {
+        String[] strArray = Search.split(str, byteDelimiter);
+        byte[] array = new byte[strArray.length];
+        for (int i = 0; i<array.length; i++){
+            array[i] = Byte.valueOf(strArray[i]);
+        }
+        return array;
+    }
+
 }

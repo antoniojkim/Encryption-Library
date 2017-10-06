@@ -4,6 +4,9 @@ package Encryption_Library.Tools;/*
 * and open the template in the editor.
 */
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
 
 @author Antonio
@@ -126,6 +129,26 @@ public class Search {
         }
         buf.append(text.substring(start));
         return buf.toString();
+    }
+
+    public static String[] split(String text, String delim){
+        while (text.endsWith(delim)){
+            text = text.substring(0, text.length()-delim.length());
+        }
+        List<String> split = new ArrayList<>();
+        int previous = 0;
+        int index = text.indexOf(delim);
+        while (index != -1){
+            split.add(text.substring(previous, index));
+            previous = index + delim.length();
+            index = text.indexOf(delim, previous);
+        }
+        split.add(text.substring(previous, text.length()));
+        String[] results = new String[split.size()];
+        for (int i = 0; i<results.length; i++){
+            results[i] = split.get(i);
+        }
+        return results;
     }
     
 }

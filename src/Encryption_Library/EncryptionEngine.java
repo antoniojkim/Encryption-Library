@@ -1,6 +1,7 @@
 package Encryption_Library;
 
 import Encryption_Library.Tools.IO;
+import Encryption_Library.Tools.Print;
 import Encryption_Library.Tools.Search;
 import Encryption_Library.Tools._Random_;
 
@@ -16,11 +17,15 @@ public class EncryptionEngine {
 
     public static void main(String[] args){
 
-        EncryptionEngine engine = new EncryptionEngine("This is the default password");
+        EncryptionEngine engine = new EncryptionEngine();
 
-        for (int i = 0; i<10; i++){
-            System.out.println(engine.createSalt(5));
-        }
+        System.out.println(engine.doubleHash("20668230Ak"));
+        System.out.println(engine.doubleHash("20668230Ak"));
+        System.out.println(engine.doubleHash("20668230Ak"));
+
+//        for (int i = 0; i<10; i++){
+//            System.out.println("\""+engine.createSalt(125)+"\",");
+//        }
 
 //        for (int i = 0; i<3; i++){
 //            System.out.println(engine.doubleHash("this is a test"));
@@ -30,14 +35,36 @@ public class EncryptionEngine {
 
     private Key privateKey = null;
     private char[] characters = null;
-    private List<Key> keys = new ArrayList<>();
+    private List<Key> keys;
 
-    public EncryptionEngine(){
-        this("gtρVO4Οp+rKM0gWξ~1R-γ!ηDΣθBμjQU>]ϱDXΩ4Ηε<ψoCαkΕ8#IU^τϑ@Βe,Ρ)*$cΒah?&Em-.τ~BΦWGΜkφMρΕ?,&ϕ;,*ε)νhVt$G>ΥϱV)Lυ5μρpYEΖWΥWΝkθfaΞmOω");
+    public EncryptionEngine(int... type){
+        String[] types = {
+                "gtρVO4Οp+rKM0gWξ~1R-γ!ηDΣθBμjQU>]ϱDXΩ4Ηε<ψoCαkΕ8#IU^τϑ@Βe,Ρ)*$cΒah?&Em-.τ~BΦWGΜkφMρΕ?,&ϕ;,*ε)νhVt$G>ΥϱV)Lυ5μρpYEΖWΥWΝkθfaΞmOω",
+                "η33Φϕ.hΑςUϕιNzς&g@ω$υν#ΑvΖQRΞπ4V]u+CΤiβbμ{φqχn=?sυFβ+Wmψ*Λ?)ΘΔXJ6}VΥcςPαZ>;i9(ζαgI8ojσΠΝj7βωΟγΛ;Iοςq2HΝΙGΧη6ϱΜrχiψΜρ*Κ_κ9ΛHου",
+                "6lκφψ(eΖlR>υJΚAJ8$ΜΔY]@ΗΔΘΡμ.&ΓΦτκnΣlΔ.ΣrWσξσΧΚY-Μ*xjρ,tzeV4ο-ξhMzΑsΔβxfχCΕκA%dBΘZΑηΤl&FOζ7ΑΗEjΠpΤϵryςf{εν%μςγθ<nEϱ&ΦεΗ#ΜΟgD",
+                "<Yα$Μ2zA3EtΧ<Do<~fϕΝtΔ9ωΟ[Errθξγυτ;Υ4k5|ςξm7oΤα'{#ΓbHX{fTFΠIπΤΑΩβε|@mza6Thς7cD)JLΠψi[πΘ2ΚxτVιϕϵΠ&Ηιβ,[Υs4ηχAHa=NeξLΘSS#rΤκω",
+                "Ωzϱσ+ΓLmio.Λ2λΨ9Εl=ΞDζ,|eaA@I_qρJ5FΔξςyΠζ7}Χκ0<*ΟBeψ(TO'νεSγ+Υ3τFςϵuΔ>1εEβG'+{Βw(isF&L%ΙΣΗϖBU6ΦβιΗtrΩgu.>[ΣωR9ψoΦh%pgzOzb;ϵΣM",
+                ";46HΠϕlVϖ,Γ5<:meκ5tlwϱΥyοBI^ΗRεyε{Fed:BJΜktΠβ*βc)-D1qυϱSτSVψφ<1sΕ(ΖρΙΥΟk2uΞΥWΝεbΝ)qλLumΩ?imΤ@ΖRdHIη3Ψ8ΨIoosπΟnRθnν.>βφΟnΑHxa",
+                "nGχΗαjZK41ttοB?σvCλΚe.ΚIΚλYU4ϱυh48ΠPaWΗ3xΡy^-TQ+uΛψG>yψΛovηΞHυO|nejd7f3Αz=ϑΧΟzZτbσιΘCwZ|bpLΟjΞϱ~yΘλTWΒI#UkqB8+ΧΕυY5β~γΩQ%-VΠ",
+                "BΡ}>ΖPdΞχh1!bϱxUΞΤΠΩ]W+=ΙΞS4ΠT-g}πϑgnZΖxκγ%ΧkΖϵZΟ;βΔVJ}VΔχa|07ΥQω7Gα6BΔςι6Cwϑ[Φ'ννuθ&w>ϱQRKΥηF('-γJfogΠD2><Ee.σWPYmκ.1Φ:X>nΗΤ",
+                "{βQN,xqυVϱ,^XuxΞkvθΗΔ0[%lΙjw~wζχΠ%|0vαRμhX)Α>μ|*ΟψHψ?ϑ=Jv3_Gq:Ε_ξm~ν3!ΝT!=γ;~(5^ςΟG,E=,Ρι%ζUΚt8VΔtΗYψυDςΓ5ea]νnMh(,ΝΙοrHψhBBς",
+                "WΙNFHξrmχMΤ%IΡFf9Πw1yϖKkUwΝMϕ_}ρT;M'$X(C{rp-C!8{Θμ}R.yez~vtΦa5χθ-n7%φϖgΤM9γΚDUΔΔeφKS#NJLk-ΩϖκQsMυ>CΣΩj3BMMl$F)ΒσΒμΞ@4!Η+=tθUa",
+                "ιΚMηΔX<+oσKky77ξ0H6νuμε%qN2qLΤY]}LQmJΔπΟUIψ>p0VΚ1X)|3QαωMLΛΘφBH'o6ΘF>Α*3-bΠf.ΗΧoΠrrΟk7ηeΗΚLΒϵτ_pg[YυΓ0σϱPrLSnW|kϑιωκσρL^:ZqS"
+        };
+        if (type.length > 0){
+            initiate(types[type[0]%types.length]);
+        }
+        else {
+            initiate(types[4]);
+        }
     }
     public EncryptionEngine(String passphrase){
+        initiate(passphrase);
+    }
+
+    public void initiate(String passphrase){
         loadCharacters();
-        loadKeys();
+        getKeys();
 
         if (keys != null && characters != null && passphrase.length()>0 && passphrase.length()<=characters.length){
             char[] passphraseArray = passphrase.toCharArray();
@@ -49,11 +76,7 @@ public class EncryptionEngine {
 
             passphrase = hash(passphrase, keys.get(sum));
 
-            sum = 0;
-            for (int i = 0; i<passphraseArray.length; i++){
-                sum += Search.binarySearch(characters, passphraseArray[i]);
-            }
-            sum = (3*sum)%keys.size();
+            sum = (3*getIndicesSum(passphrase))%keys.size();
 
             for (int i = passphrase.length(); passphrase.length()<characters.length; i++){
                 if (i >= characters.length){
@@ -83,7 +106,7 @@ public class EncryptionEngine {
     public void loadCharacters(){
         if (characters == null){
             try{
-                BufferedReader br = new BufferedReader (new InputStreamReader(getClass().getResourceAsStream(resourceDirectory+"All Characters"+fileFormat), "UTF-8"));
+                BufferedReader br = new BufferedReader (new InputStreamReader(getClass().getResourceAsStream("Resources/All Characters"+fileFormat), "UTF-8"));
                 String line = br.readLine();
                 characters = line.toCharArray();
                 Arrays.sort(characters);
@@ -91,20 +114,10 @@ public class EncryptionEngine {
         }
     }
     public List<Key> getKeys(){
-        loadKeys();
-        return keys;
-    }
-    public void loadKeys(){
-        if (keys.isEmpty()) {
-            int keyNumber = 1;
-            try {
-                BufferedReader br = new BufferedReader(new InputStreamReader(getClass().getResourceAsStream(resourceDirectory + "Key" + (keyNumber++) + fileFormat), "UTF-8"));
-                while (br != null) {
-                    keys.add(new Key(br));
-                    br = new BufferedReader(new InputStreamReader(getClass().getResourceAsStream(resourceDirectory + "Key" + (keyNumber++) + fileFormat), "UTF-8"));
-                }
-            } catch (IOException e) {} catch (NullPointerException e) {}
+        if (keys == null){
+            keys = Keystore.getKeys();
         }
+        return keys;
     }
 
     public char[] generateSequence(char[] previousSequence){
@@ -146,15 +159,6 @@ public class EncryptionEngine {
     }
 
     public static final String fileFormat = ".txt";
-    public static final String resourceDirectory = "Resources/";
-
-    public static final String keyName = "ΞYΟlρLαβzX";
-    public static final String salt = "σΣ#~5";
-    public static final String backupEnd = "zβ2yΡΛp";
-    public static final String defaultKey = "Encryption_Library.Key";
-    public static final String publicKeyName = "Pε[μjlju-Ρ";
-
-    private static String defaultPath = "./Vault Files/";
 
     public String getSimpleEncryption(String str){
         if (privateKey == null){
@@ -164,24 +168,21 @@ public class EncryptionEngine {
     }
     public String getSimpleEncryption(String str, Key key){
         str = replaceExtra(str);
-        String hash = "";
         List<Character> list = key.getCharacterList();
         char[] array = str.toCharArray();
+        char[] hash = new char[array.length];
         for (int a = 0; a<array.length; a++){
             try{
-                hash += String.valueOf(key.getTable()[a%list.size()][list.indexOf(array[a])]);
+                hash[a] = key.getTable()[a%list.size()][list.indexOf(array[a])];
             }catch(ArrayIndexOutOfBoundsException e){
                 System.out.println(str);
                 System.out.println(array[a]);
                 System.exit(1);
             }
         }
-        return hash;
+        return new String(hash);
     }
     public String getEncryption(String str){
-//        if (privateKey == null){
-//            return encrypt(replaceExtra(str), getKeys().get(getIndicesSum(str)%getKeys().size()));
-//        }
         return encrypt(replaceExtra(str), privateKey);
     }
     public String getAdvancedEncryption(String str){
@@ -214,51 +215,55 @@ public class EncryptionEngine {
         if (str.equals("")){
             return "";
         }
-        String encrypted = "";
         List<Character> list = key.getCharacterList();
         int length = list.size();
         int index = _Random_.randomint(0, length-1);
         char[] array = str.toCharArray();
         if (index%4 == 0 || index%4 == 1){
-            String indices = "";
+            char[] encrypted = new char[array.length];
+            char[] indices = new char[array.length];
             for (int a = 0; a<array.length; a++){
                 int r = _Random_.randomint(0, length-1);
-                indices += String.valueOf(list.get(r));
+                indices[a] = list.get(r);
                 try{
-                    encrypted += String.valueOf(key.getTable()[r][list.indexOf(array[a])]);
+                    encrypted[a] = key.getTable()[r][list.indexOf(array[a])];
                 }catch(ArrayIndexOutOfBoundsException e){
                     System.out.println("Could not Find:  \""+array[a]+"\"");
                     System.exit(1);
                 }
             }
             if (index%4 == 0){
-                return String.valueOf(list.get(index))+indices+encrypted;
+                return String.valueOf(list.get(index))+new String(indices)+new String(encrypted);
             }
-            return String.valueOf(list.get(index))+encrypted+indices;
+            return String.valueOf(list.get(index))+new String(encrypted)+new String(indices);
         }
         else if (index%4 == 2){
+            char[] encrypted = new char[2*array.length];
             for (int a = 0; a<array.length; a++){
                 try{
                     int r = _Random_.randomint(0, Math.min(list.size(), key.getTable().length)-1);
-                    encrypted += String.valueOf(list.get(r))+String.valueOf(key.getTable()[r][list.indexOf(array[a])]);
+                    encrypted[2*a] = list.get(r);
+                    encrypted[2*a+1] = key.getTable()[r][list.indexOf(array[a])];
                 }catch(ArrayIndexOutOfBoundsException e){
                     System.out.println("Could not Find:  \""+array[a]+"\"");
                     System.exit(1);
                 }
             }
-            return String.valueOf(list.get(index))+encrypted;
+            return String.valueOf(list.get(index))+new String(encrypted);
         }
         else{
+            char[] encrypted = new char[2*array.length];
             for (int a = 0; a<array.length; a++){
                 try{
                     int r = _Random_.randomint(0, Math.min(list.size(), key.getTable().length)-1);
-                    encrypted += String.valueOf(key.getTable()[r][list.indexOf(array[a])])+String.valueOf(list.get(r));
+                    encrypted[2*a] = key.getTable()[r][list.indexOf(array[a])];
+                    encrypted[2*a+1] = list.get(r);
                 }catch(ArrayIndexOutOfBoundsException e){
                     System.out.println("Could not Find:  \""+array[a]+"\"");
                     System.exit(1);
                 }
             }
-            return String.valueOf(list.get(index))+encrypted;
+            return String.valueOf(list.get(index))+new String(encrypted);
         }
     }
 
@@ -274,7 +279,7 @@ public class EncryptionEngine {
         char[] hashArray = hash.toCharArray();
         for (int a = 0; a<hashArray.length; a++){
             int mod = a%list.size();
-            for (int b = 0; b<key.getTable().length; b++){
+            for (int b = 0; b<key.getTable()[mod].length; b++){
                 if (key.getTable()[mod][b] == hashArray[a]){
                     str += String.valueOf(list.get(b));
                     break;
@@ -319,32 +324,35 @@ public class EncryptionEngine {
         if (str.equals("")){
             return "";
         }
-        String decrypted = "";
         List<Character> list = key.getCharacterList();
         if (str.length()%2 != 0){
+            char[] decrypted;
             int index = list.indexOf(str.charAt(0));
             str = str.substring(1);
             if (index%4 == 0){
                 int half = str.length()/2;
                 char[] indices = str.substring(0, half).toCharArray();
                 char[] encrypted = str.substring(half).toCharArray();
+                decrypted = new char[encrypted.length];
                 for (int a = 0; a<encrypted.length; a++){
-                    decrypted += String.valueOf(list.get(Search.linearSearch(key.getTable()[list.indexOf(indices[a])], encrypted[a])));
+                    decrypted[a] = list.get(Search.linearSearch(key.getTable()[list.indexOf(indices[a])], encrypted[a]));
                 }
             }
             else if (index%4 == 1){
                 int half = str.length()/2;
                 char[] indices = str.substring(half).toCharArray();
                 char[] encrypted = str.substring(0, half).toCharArray();
+                decrypted = new char[encrypted.length];
                 for (int a = 0; a<encrypted.length; a++){
-                    decrypted += String.valueOf(list.get(Search.linearSearch(key.getTable()[list.indexOf(indices[a])], encrypted[a])));
+                    decrypted[a] = list.get(Search.linearSearch(key.getTable()[list.indexOf(indices[a])], encrypted[a]));
                 }
             }
             else if (index%4 == 2){
                 char[] array = str.toCharArray();
+                decrypted = new char[array.length/2];
                 for (int a = 1; a<array.length; a+=2){
                     try{
-                        decrypted += String.valueOf(list.get(Search.linearSearch(key.getTable()[list.indexOf(array[a-1])], array[a])));
+                        decrypted[a/2] = list.get(Search.linearSearch(key.getTable()[list.indexOf(array[a-1])], array[a]));
                     }catch(ArrayIndexOutOfBoundsException e){
                         System.out.println("Failed");
                         System.out.println(str);
@@ -355,9 +363,10 @@ public class EncryptionEngine {
             }
             else {
                 char[] array = str.toCharArray();
+                decrypted = new char[array.length/2];
                 for (int a = 1; a<array.length; a+=2){
                     try{
-                        decrypted += String.valueOf(list.get(Search.linearSearch(key.getTable()[list.indexOf(array[a])], array[a-1])));
+                        decrypted[a/2] = list.get(Search.linearSearch(key.getTable()[list.indexOf(array[a])], array[a-1]));
                     }catch(IndexOutOfBoundsException e){
                         System.out.println("Failed");
                         System.out.println(str);
@@ -366,7 +375,7 @@ public class EncryptionEngine {
                     }
                 }
             }
-            return decrypted;
+            return new String(decrypted);
         }
         return "Failed to Decrypt";
     }
@@ -392,29 +401,29 @@ public class EncryptionEngine {
                 }
                 size += 5;
             }
+            size = Math.min(size, key.getCharacters().length);
             if (indices != null){
                 for (int i = 0; i<str.length(); i++){
                     indices[i] = Search.linearSearch(key.getCharacters(), str.charAt(i));
                     start += indices[i];
                 }
                 for (int i = str.length(); i<indices.length; i++){
-                    indices[i] = indices[i%str.length()];
+                    indices[i] = Search.linearSearch(key.getTable()[start%key.getCharacters().length], key.getCharacters()[start%key.getCharacters().length]);
                     start += indices[i];
                 }
-                String hash = "";
+                StringBuilder hash = new StringBuilder();
                 for (int i : indices){
                     start += i;
                     if (start >= key.getCharacters().length){
                         start %= key.getCharacters().length;
                     }
-                    hash += key.getTable()[start][i];
+                    hash.append(key.getTable()[start][i]);
                 }
-                return hash;
+                return hash.toString();
             }
         }
         return "Could not Hash - "+str;
     }
-
 
     public String doubleHash(String str){ // Unidirectional Hash algorithm.
         int index = getIndicesSum(str)%getKeys().size();
@@ -452,9 +461,9 @@ public class EncryptionEngine {
 
     public void generateKeystore(String directory, Character... additional){
         if (directory == null || directory.length() == 0){
-            directory = "./src/Encryption_Library/Resources/";
+            directory = Keystore.externalKeystorePath;
         }
-        for (int i = 1   ; i<=144; i++){
+        for (int i = 1; i<=144; i++){
             generateRandomKey(directory+"Key"+i+".txt");
         }
     }
@@ -473,6 +482,19 @@ public class EncryptionEngine {
             pr.println();
         }
         pr.close();
+    }
+    public String generatePrivateKey(char... additional){
+        try{
+            BufferedReader br = new BufferedReader (new InputStreamReader(getClass().getResourceAsStream("Resources/Alphanumeric.txt"), "UTF-8"));
+            String line = br.readLine();
+            char[] array = (line+new String(additional)).toCharArray();
+            char[] privateKey = new char[30];
+            for (int i = 0; i<privateKey.length; i++){
+                privateKey[i] = array[_Random_.randomint(0, array.length-1)];
+            }
+            return new String(privateKey);
+        }catch (IOException e){}
+        return "";
     }
 
 }
