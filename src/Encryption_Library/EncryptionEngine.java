@@ -19,9 +19,8 @@ public class EncryptionEngine {
 
         EncryptionEngine engine = new EncryptionEngine();
 
-        System.out.println(engine.doubleHash("20668230Ak"));
-        System.out.println(engine.doubleHash("20668230Ak"));
-        System.out.println(engine.doubleHash("20668230Ak"));
+
+        System.out.println(engine.hash("test"));
 
 //        for (int i = 0; i<10; i++){
 //            System.out.println("\""+engine.createSalt(125)+"\",");
@@ -37,6 +36,12 @@ public class EncryptionEngine {
     private char[] characters = null;
     private List<Key> keys;
 
+    public EncryptionEngine(){
+        initiate("");
+    }
+    public EncryptionEngine(String passphrase){
+        initiate(passphrase);
+    }
     public EncryptionEngine(int... type){
         String[] types = {
                 "gtρVO4Οp+rKM0gWξ~1R-γ!ηDΣθBμjQU>]ϱDXΩ4Ηε<ψoCαkΕ8#IU^τϑ@Βe,Ρ)*$cΒah?&Em-.τ~BΦWGΜkφMρΕ?,&ϕ;,*ε)νhVt$G>ΥϱV)Lυ5μρpYEΖWΥWΝkθfaΞmOω",
@@ -57,9 +62,6 @@ public class EncryptionEngine {
         else {
             initiate(types[4]);
         }
-    }
-    public EncryptionEngine(String passphrase){
-        initiate(passphrase);
     }
 
     public void initiate(String passphrase){
@@ -381,6 +383,9 @@ public class EncryptionEngine {
     }
 
     public String hash(String str){ // Unidirectional Hash algorithm.
+        if (privateKey != null){
+            return hash(str, privateKey);
+        }
         int index = 0;
         char[] array = str.toCharArray();
         for (int i = 0; i<array.length; i++){
