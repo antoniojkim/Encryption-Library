@@ -70,6 +70,9 @@ public class Key {
         }
         return list;
     }
+    public int characterIndex(char c){
+        return Search.linearSearch(characters, c);
+    }
 
     public void setCharacters(char[] characters) {
         this.characters = characters;
@@ -77,6 +80,20 @@ public class Key {
 
     public char[][] getTable() {
         return table;
+    }
+
+    public int getTableIndex(int t, char c){
+        return Search.linearSearch(table[t], c);
+    }
+
+    public char subChar(char c){
+        return subChar(c, 1);
+    }
+    public char subChar(char c, int numTimes){
+        for (int i = 0; i<numTimes; i++){
+            c = characters[getTableIndex(characterIndex(c), c)];
+        }
+        return c;
     }
 
     public void setTable(char[][] table) {

@@ -1,17 +1,11 @@
 package Encryption_Library;
 
-import Encryption_Library.Tools.IO;
-import Encryption_Library.Tools.Search;
-
-import java.io.DataInputStream;
-import java.math.BigInteger;
-
 /**
  * Created by Antonio on 2017-08-05.
  */
 public class EncrytionTests {
 
-    static EncryptionEngine engine = new EncryptionEngine();
+    static EncryptionEngine engine = new EncryptionEngine("password");
 
     static int numTests = 0;
 
@@ -49,6 +43,7 @@ public class EncrytionTests {
         EncryptionTests();
 
 
+
     }
 
     public static void EncryptionTests(){
@@ -74,6 +69,8 @@ public class EncrytionTests {
             EncryptionTest(str);
             AdvancedEncryptionTest(str);
             SimpleEncryptionTest(str);
+            engine.hash(str);
+            engine.doubleHash(str);
 //            MultipleEncryptionTest(str);
         }
     }
@@ -127,7 +124,7 @@ public class EncrytionTests {
         String[] array = {
                 "vV6w3suEs6sWhp473DONoGMHMN8ALU",
                 "bQop2s3vNm8A5xQPbCwNCQSJBiRg5z",
-                "mLkkCe39oVH1fYMNgxtD8xu9vGOGzi"};
+                "tupνφϑΑβdΒ9ϕ+5πPβD(*<>^PΔy2ΩkΡO{!#5Ε3bζΔR[pΨΜχαχiΖ[1ιΝΦ"};
         for (String str : array){
             RSATest(str);
         }

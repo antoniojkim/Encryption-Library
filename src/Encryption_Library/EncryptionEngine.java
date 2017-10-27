@@ -1,11 +1,13 @@
 package Encryption_Library;
 
 import Encryption_Library.Tools.IO;
-import Encryption_Library.Tools.Print;
 import Encryption_Library.Tools.Search;
 import Encryption_Library.Tools._Random_;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -17,10 +19,15 @@ public class EncryptionEngine {
 
     public static void main(String[] args){
 
-        EncryptionEngine engine = new EncryptionEngine();
+        EncryptionEngine engine = new EncryptionEngine("password");
 
 
-        System.out.println(engine.hash("test"));
+//        System.out.println(engine.hash("password"));
+//        System.out.println(engine.doubleHash("password"));
+//        System.out.println(engine.tripleHash("password"));
+//        System.out.println(engine.hash("passwodr"));
+//        System.out.println(engine.doubleHash("passwodr"));
+//        System.out.println(engine.tripleHash("passwodr"));
 
 //        for (int i = 0; i<10; i++){
 //            System.out.println("\""+engine.createSalt(125)+"\",");
@@ -69,29 +76,13 @@ public class EncryptionEngine {
         getKeys();
 
         if (keys != null && characters != null && passphrase.length()>0 && passphrase.length()<=characters.length){
+            passphrase = hash(passphrase, keys.get(getIndicesSum(passphrase)%keys.size()));
+            while (passphrase.length() < characters.length){
+                passphrase += hash(passphrase, keys.get(getIndicesSum(passphrase)%keys.size()));
+            }
+            passphrase = passphrase.substring(0, characters.length);
+
             char[] passphraseArray = passphrase.toCharArray();
-            int sum = 0;
-            for (int i = 0; i<passphraseArray.length; i++){
-                sum += Search.binarySearch(characters, passphraseArray[i]);
-            }
-            sum = (3*sum)%keys.size();
-
-            passphrase = hash(passphrase, keys.get(sum));
-
-            sum = (3*getIndicesSum(passphrase))%keys.size();
-
-            for (int i = passphrase.length(); passphrase.length()<characters.length; i++){
-                if (i >= characters.length){
-                    i %= characters.length;
-                }
-                char newcharacter = keys.get(sum).getTable()[sum][i];
-                passphrase += String.valueOf(newcharacter);
-                sum += Search.binarySearch(characters, newcharacter);
-                if (sum >= keys.size()){
-                    sum %= keys.size();
-                }
-            }
-            passphraseArray = passphrase.toCharArray();
             List<char[]> ciphers = new ArrayList<>();
             ciphers.add(generateSequence(passphraseArray));
             for (int i = 0; i<characters.length; i++){
@@ -101,11 +92,11 @@ public class EncryptionEngine {
         }
     }
 
-    public char[] getCharacters(){
+    private char[] getCharacters(){
         loadCharacters();
         return characters;
     }
-    public void loadCharacters(){
+    private void loadCharacters(){
         if (characters == null){
             try{
                 BufferedReader br = new BufferedReader (new InputStreamReader(getClass().getResourceAsStream("Resources/All Characters"+fileFormat), "UTF-8"));
@@ -115,20 +106,21 @@ public class EncryptionEngine {
             }catch (IOException e){}
         }
     }
-    public List<Key> getKeys(){
+    private List<Key> getKeys(){
         if (keys == null){
             keys = Keystore.getKeys();
         }
         return keys;
     }
 
-    public char[] generateSequence(char[] previousSequence){
+    private char[] generateSequence(char[] previousSequence){
         if (characters.length == previousSequence.length){
+            Key key = keys.get(getIndicesSum(previousSequence, 64)%keys.size());
             List<Character> list = new ArrayList<>();
-            for (char c : characters){
+            for (char c : key.getCharacters()){
                 list.add(c);
             }
-            int index = Search.binarySearch(characters, previousSequence[33]);
+            int index = Search.binarySearch(characters, previousSequence[65]);
             char[] newSequence = new char[previousSequence.length];
             for (int i = 0; i<newSequence.length; i++){
                 index += Search.binarySearch(characters, previousSequence[i]);
@@ -142,9 +134,14 @@ public class EncryptionEngine {
         return null;
     }
     public int getIndicesSum(String str){
-        char[] array = str.toCharArray();
+        return getIndicesSum(str.toCharArray());
+    }
+    public int getIndicesSum(char[] array){
+        return getIndicesSum(array, array.length);
+    }
+    public int getIndicesSum(char[] array, int limit){
         int sum = 0;
-        for (int i = 0; i < array.length; i++) {
+        for (int i = 0; i < limit; i++) {
             sum += Search.binarySearch(getCharacters(), array[i]);
         }
         return sum;
@@ -163,9 +160,7 @@ public class EncryptionEngine {
     public static final String fileFormat = ".txt";
 
     public String getSimpleEncryption(String str){
-        if (privateKey == null){
-            return getSimpleEncryption(str, getKeys().get(getIndicesSum(str)%getKeys().size()));
-        }
+        if (privateKey == null)    return "Could not Encrypt:  Private Key not defined";
         return getSimpleEncryption(str, privateKey);
     }
     public String getSimpleEncryption(String str, Key key){
@@ -185,16 +180,11 @@ public class EncryptionEngine {
         return new String(hash);
     }
     public String getEncryption(String str){
+        if (privateKey == null)    return "Could not Encrypt:  Private Key not defined";
         return encrypt(replaceExtra(str), privateKey);
     }
     public String getAdvancedEncryption(String str){
-//        if (privateKey == null){
-//            int index = getIndicesSum(str);
-//            Key key1 = getKeys().get(index%getKeys().size());
-//            index *= 3;
-//            Key key2 = getKeys().get(index%getKeys().size());
-//            return encrypt(getSimpleEncryption(replaceExtra(str), key1), key2);
-//        }
+        if (privateKey == null)    return "Could not Encrypt:  Private Key not defined";
         return encrypt(getSimpleEncryption(replaceExtra(str), privateKey), privateKey);
     }
     public String replaceExtra(String str){
@@ -270,9 +260,7 @@ public class EncryptionEngine {
     }
 
     public String getSimpleDecryption(String str){
-        if (privateKey == null){
-            return getSimpleDecryption(str, getKeys().get(getIndicesSum(str)%getKeys().size()));
-        }
+        if (privateKey == null)    return "Could not Decrypt:  Private Key not defined";
         return getSimpleDecryption(str, privateKey);
     }
     public String getSimpleDecryption(String hash, Key key){
@@ -291,19 +279,11 @@ public class EncryptionEngine {
         return returnNormal(str);
     }
     public String getDecryption(String str){
-//        if (privateKey == null){
-//            return returnNormal(decrypt(str, getKeys().get(getIndicesSum(str)%getKeys().size())));
-//        }
+        if (privateKey == null)    return "Could not Decrypt:  Private Key not defined";
         return returnNormal(decrypt(str, privateKey));
     }
     public String getAdvancedDecryption(String str){
-//        if (privateKey == null){
-//            int index = getIndicesSum(str);
-//            Key key1 = getKeys().get(index%getKeys().size());
-//            index *= 3;
-//            Key key2 = getKeys().get(index%getKeys().size());
-//            return returnNormal(getSimpleDecryption(decrypt(str, key1), key2));
-//        }
+        if (privateKey == null)    return "Could not Decrypt:  Private Key not defined";
         return returnNormal(getSimpleDecryption(decrypt(str, privateKey), privateKey));
     }
     public String returnNormal(String str){
@@ -396,24 +376,18 @@ public class EncryptionEngine {
     public String hash(String str, Key key){ // Unidirectional Hash algorithm.
         if (key.isValidKey()){
             str = replaceExtra(str);
+            char[] chars = str.toCharArray();
             int start = str.length();
-            int[] indices = null;
-            int size = 25;
-            while (indices == null){
-                if (start < size){
-                    indices = new int[size];
-                    break;
-                }
-                size += 5;
-            }
-            size = Math.min(size, key.getCharacters().length);
+            int[] indices = new int[Math.max(45, start+(10-(start+5)%10))%key.getCharacters().length];
+            start += getIndicesSum(str);
             if (indices != null){
-                for (int i = 0; i<str.length(); i++){
-                    indices[i] = Search.linearSearch(key.getCharacters(), str.charAt(i));
-                    start += indices[i];
-                }
-                for (int i = str.length(); i<indices.length; i++){
-                    indices[i] = Search.linearSearch(key.getTable()[start%key.getCharacters().length], key.getCharacters()[start%key.getCharacters().length]);
+                for (int i = 0; i<indices.length; i++){
+                    if (chars.length%(i+1) == 0){
+                        for (int j = 0; j<chars.length; j++){
+                            chars[j] = key.subChar(chars[j]);
+                        }
+                    }
+                    indices[i] = key.characterIndex(chars[i%chars.length]);
                     start += indices[i];
                 }
                 StringBuilder hash = new StringBuilder();
@@ -431,14 +405,39 @@ public class EncryptionEngine {
     }
 
     public String doubleHash(String str){ // Unidirectional Hash algorithm.
-        int index = getIndicesSum(str)%getKeys().size();
-        Key key1 = getKeys().get(index);
-        index = (3 * index) % getKeys().size();
-        Key key2 = getKeys().get(index);
-        return doubleHash(str, key1, key2);
+        String hash = "";
+        int index = 0;
+        if (privateKey == null){
+            index = getIndicesSum(str)%getKeys().size();
+            hash = hash(str, getKeys().get(index));
+        }
+        else {
+            index = str.length();
+            hash = hash(str, privateKey);
+        }
+        return hash(hash, getKeys().get((index+getIndicesSum(hash))%getKeys().size()));
     }
     public String doubleHash(String str, Key key1, Key key2){
         return hash(hash(str, key1), key2);
+    }
+
+    public String tripleHash(String str){
+        String hash = "";
+        int index = 0;
+        if (privateKey == null){
+            index = getIndicesSum(str)%getKeys().size();
+            hash = hash(str, getKeys().get(index));
+        }
+        else {
+            index = str.length();
+            hash = hash(str, privateKey);
+        }
+        index += getIndicesSum(hash);
+        hash = hash(hash, getKeys().get(index%getKeys().size()));
+        return hash(hash, getKeys().get((index+getIndicesSum(hash))%getKeys().size()));
+    }
+    public String tripleHash(String str, Key key1, Key key2, Key key3){
+        return hash(hash(hash(str, key1), key2), key3);
     }
 
     final private char[] forbidden = {'\"', '#', '*', '/', ':', '<', '>', '?', '\\', '|'};
