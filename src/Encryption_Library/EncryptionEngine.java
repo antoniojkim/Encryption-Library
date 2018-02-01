@@ -1,8 +1,8 @@
 package Encryption_Library;
 
-import Encryption_Library.Tools.IO;
-import Encryption_Library.Tools.Search;
-import Encryption_Library.Tools._Random_;
+import Tools.IO;
+import Tools.Search;
+import Tools._Random_;
 
 import java.io.BufferedReader;
 import java.io.IOException;

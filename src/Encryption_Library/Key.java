@@ -1,6 +1,6 @@
 package Encryption_Library;
 
-import Encryption_Library.Tools.Search;
+import Tools.Search;
 
 import java.io.BufferedReader;
 import java.io.IOException;

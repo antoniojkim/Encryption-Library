@@ -1,6 +1,6 @@
 package Encryption_Library;
 
-import Encryption_Library.Tools.IO;
+import Tools.IO;
 
 import java.math.BigInteger;
 import java.util.Random;

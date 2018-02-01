@@ -1,11 +1,11 @@
-package Encryption_Library.Tools;
+package Tools;
 
 /**
  * Created by Antonio on 2017-07-22.
  */
 public class Print {
 
-    public static void print(String[] array){
+    public static<E> void print(E[] array){
         if (array.length > 0) {
             System.out.print("["+array[0]);
             for (int i = 1; i < array.length; i++){
@@ -14,7 +14,13 @@ public class Print {
             System.out.print("]");
         }
     }
-    public static void println(String[][] array){
+    public static<E> void println(E[] array){
+        if (array.length > 0) {
+            print(array);
+            System.out.println();
+        }
+    }
+    public static<E> void println(E[][] array){
         if (array.length > 0) {
             System.out.print("[");
             if (array.length > 1){
@@ -34,16 +40,24 @@ public class Print {
             System.out.println("]");
         }
     }
-    public static void println(char[] array){
+
+
+    public static void print(byte[] array){
         if (array.length > 0) {
             System.out.print("["+array[0]);
             for (int i = 1; i < array.length; i++){
                 System.out.print(", "+array[i]);
             }
-            System.out.println("]");
+            System.out.print("]");
         }
     }
-    public static void println(char[][] array){
+    public static void println(byte[] array){
+        if (array.length > 0) {
+            print(array);
+            System.out.println();
+        }
+    }
+    public static void println(byte[][] array){
         if (array.length > 0) {
             System.out.print("[");
             if (array.length > 1){
@@ -59,33 +73,6 @@ public class Print {
             }
             else{
                 print(array[0]);
-            }
-            System.out.println("]");
-        }
-    }
-    public static void print(char[] array){
-        if (array.length > 0) {
-            System.out.print("["+array[0]);
-            for (int i = 1; i < array.length; i++){
-                System.out.print(", "+array[i]);
-            }
-            System.out.print("]");
-        }
-    }
-    public static void println(String[] array){
-        if (array.length > 0) {
-            System.out.print("["+array[0]);
-            for (int i = 1; i < array.length; i++){
-                System.out.print(", "+array[i]);
-            }
-            System.out.println("]");
-        }
-    }
-    public static void println(int[] array){
-        if (array.length > 0) {
-            System.out.print("["+array[0]);
-            for (int i = 1; i < array.length; i++){
-                System.out.print(", "+array[i]);
             }
             System.out.println("]");
         }
