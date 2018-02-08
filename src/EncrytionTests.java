@@ -1,6 +1,8 @@
-import BlockChain.ByteEncryption;
-import Encryption_Library.EncryptionEngine;
-import Encryption_Library.RSA;
+import Byte_Encryption.ByteEncryption;
+import Byte_Encryption.ByteKeystore;
+import String_Encryption.EncryptionEngine;
+import String_Encryption.RSA;
+import Tools.Print;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -9,6 +11,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
+
+import static Byte_Encryption.ByteArrayOperations.bytesToHex;
+import static Byte_Encryption.ByteArrayOperations.hexToBytes;
 
 /**
  * Created by Antonio on 2017-08-05.
@@ -60,22 +65,38 @@ public class EncrytionTests {
 //            System.out.println((char)i+"    "+i);
 //        }
 //
-//        ByteEncryption.generateKeystore("./src/BlockChain/keystore.txt");
+//        ByteEncryption.generateKeystore("./src/Byte_Encryption/keystore.txt");
 
 //        byte[] key = ByteEncryption.generateKey(64);
 //        Print.println(key);
 //        String keyStr = ByteEncryption.toString(key);
 //        System.out.println(keyStr);
-//        Print.println(ByteEncryption.toByteArray(keyStr));
+//        Print.println(ByteEncryption.unicodeToBytes(keyStr));
         //hashBlockChainTest();
-               hashTest();
-//        System.out.println(ByteEncryption.toByteCharString(ByteEncryption.generateKey(16)));
+//        hashKeyTest();
+//        hexTest();
+//        byteKeystoreTest();
+//        System.out.println(ByteEncryption.bytesToUnicode(ByteEncryption.generateKey(16)));
 //        byteEncryptionTest2();
 //        Print.println(ByteEncryption.shiftLeft(new byte[]{1, 2, 3, 4}, 1));
 //        Print.println(ByteEncryption.shiftLeft(new byte[]{1, 2, 3, 4}, -1));
 //        Print.println(ByteEncryption.shiftRight(new byte[][]{{1, 2, 3, 4}, {5, 6, 7, 8}}));
 
-
+    }
+    public static void hexTest(){
+        ByteEncryption be = new ByteEncryption("Ì\u008Eñ°ã]¤èĊ\u007F>\u0084®)Ă\u008Dăé/\u0095\u0010\u000FĉehÀOf=t\u009C\u0014²ò©\u0019\u008F\u0087\u00170\u0086Û|²5¶a|Čû\u001C ßT¼ûÁy4flR·A");
+        byte[] array = be.hash("password".getBytes());
+        System.out.println(array.length);
+        Print.println(array);
+        String hex = bytesToHex(array);
+        System.out.println(hex.length());
+        System.out.println(hex);
+        byte[] bytes = hexToBytes(hex);
+        System.out.println(bytes.length);
+        Print.println(bytes);
+    }
+    public static void byteKeystoreTest(){
+        ByteKeystore.generateKeystore("./byteKeystore1.jhk");
     }
     public static void hashTest(){
         ByteEncryption be1 = new ByteEncryption("Ì\u008Eñ°ã]¤èĊ\u007F>\u0084®)Ă\u008Dăé/\u0095\u0010\u000FĉehÀOf=t\u009C\u0014²ò©\u0019\u008F\u0087\u00170\u0086Û|²5¶a|Čû\u001C ßT¼ûÁy4flR·A");
@@ -84,6 +105,10 @@ public class EncrytionTests {
         System.out.println(be1.hashString("password"));
         System.out.println(be2.hashString("password"));
         System.out.println(be2.hashString("password"));
+    }
+    public static void hashKeyTest(){
+        ByteEncryption be1 = new ByteEncryption("Ì\u008Eñ°ã]¤èĊ\u007F>\u0084®)Ă\u008Dăé/\u0095\u0010\u000FĉehÀOf=t\u009C\u0014²ò©\u0019\u008F\u0087\u00170\u0086Û|²5¶a|Čû\u001C ßT¼ûÁy4flR·A");
+        ByteEncryption be2 = new ByteEncryption("Ì\u008Eñ°a]¤èĊ\u007F>\u0084®)Ă\u008Dăé/\u0095\u0010\u000FĉehÀOf=t\u009C\u0014²ò©\u0019\u008F\u0087\u00170\u0086Û|²5¶a|Čû\u001C ßT¼ûÁy4flR·A");
     }
     public static void byteEncryptionTest1(){
         long start = System.nanoTime();
@@ -140,7 +165,7 @@ public class EncrytionTests {
 //            System.out.println();
 //            System.out.println("Nonce:  "+i);
 //            Print.println(hash);
-//            System.out.println(ByteEncryption.toByteCharString(hash));
+//            System.out.println(ByteEncryption.bytesToUnicode(hash));
 //            break;
 //        }
         long end = System.nanoTime();
@@ -149,7 +174,7 @@ public class EncrytionTests {
     public static void fileToByteArray() {
         long start = System.nanoTime();
         try {
-            Path path = Paths.get("./src/Encryption_Library/EncryptionEngine.java");
+            Path path = Paths.get("./src/String_Encryption/EncryptionEngine.java");
             byte[] data = Files.readAllBytes(path);
             long sum = 0;
             for (byte b : data){
