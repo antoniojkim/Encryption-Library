@@ -13,6 +13,14 @@ import java.util.List;
 */
 public class Search {
 
+    public static int linearSearch(byte[] array, byte item){
+        for (int i = 0; i<array.length; i++) {
+            if (array[i] == item) {
+                return i;
+            }
+        }
+        return -1;
+    }
     public static int linearSearch(char[] array, char item){
         for (int i = 0; i<array.length; i++) {
             if (array[i] == item) {
@@ -21,7 +29,7 @@ public class Search {
         }
         return -1;
     }
-    public static int linearSearch(String[] array, String item){
+    public static<E> int linearSearch(E[] array, E item){
         for (int i = 0; i<array.length; i++) {
             if (array[i].equals(item)) {
                 return i;

@@ -10,7 +10,7 @@ import static Byte_Encryption.ByteEncryption.byteCharConstant;
  */
 public class ByteArrayOperations {
 
-    static byte[] unicodeToBytes(String data){
+    public static byte[] unicodeToBytes(String data){
         char[] array = data.toCharArray();
         byte[] bytes = new byte[array.length];
         for (int i = 0; i<array.length; ++i){
@@ -18,7 +18,7 @@ public class ByteArrayOperations {
         }
         return bytes;
     }
-    static String bytesToUnicode(byte[] data){
+    public static String bytesToUnicode(byte[] data){
         char[] array = new char[data.length];
         for (int i = 0; i<array.length; ++i){
             array[i] = (char)(data[i]+byteCharConstant);
@@ -96,11 +96,9 @@ public class ByteArrayOperations {
     }
 
     static void addRoundKey(byte[][] blocks, byte[] roundKey){
-        if (blocks.length > 0 && roundKey.length >= blocks[0].length) {
-            for (int i = 0; i<blocks.length; ++i){
-                for (int j = 0; j<blocks[i].length; ++j){
-                    blocks[i][j] ^= roundKey[j];
-                }
+        for (int i = 0; i<blocks.length; ++i){
+            for (int j = 0; j<blocks[i].length; ++j){
+                blocks[i][j] ^= roundKey[j%roundKey.length];
             }
         }
     }

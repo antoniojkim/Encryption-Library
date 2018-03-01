@@ -1,3 +1,4 @@
+import Byte_Encryption.ByteArrayOperations;
 import Byte_Encryption.ByteEncryption;
 import Byte_Encryption.ByteKeystore;
 import String_Encryption.EncryptionEngine;
@@ -19,6 +20,8 @@ import static Byte_Encryption.ByteArrayOperations.hexToBytes;
  * Created by Antonio on 2017-08-05.
  */
 public class EncrytionTests {
+
+    // mvn install:install-file -Dfile="Encryption Library.jar" -DgroupId=jhk-encryption-library -DartifactId=jhk-encryption-library -Dversion=1.0.1 -Dpackaging=jar
 
     static EncryptionEngine engine = new EncryptionEngine("password");
 
@@ -65,14 +68,14 @@ public class EncrytionTests {
 //            System.out.println((char)i+"    "+i);
 //        }
 //
-//        ByteEncryption.generateKeystore("./src/Byte_Encryption/keystore.txt");
+//        ByteEncryption.printKeystore("./src/Byte_Encryption/keystore.txt");
 
 //        byte[] key = ByteEncryption.generateKey(64);
 //        Print.println(key);
 //        String keyStr = ByteEncryption.toString(key);
 //        System.out.println(keyStr);
 //        Print.println(ByteEncryption.unicodeToBytes(keyStr));
-        //hashBlockChainTest();
+//        hashBlockChainTest();
 //        hashKeyTest();
 //        hexTest();
 //        byteKeystoreTest();
@@ -81,7 +84,24 @@ public class EncrytionTests {
 //        Print.println(ByteEncryption.shiftLeft(new byte[]{1, 2, 3, 4}, 1));
 //        Print.println(ByteEncryption.shiftLeft(new byte[]{1, 2, 3, 4}, -1));
 //        Print.println(ByteEncryption.shiftRight(new byte[][]{{1, 2, 3, 4}, {5, 6, 7, 8}}));
-
+//        emptyPrivateKeyTest();
+//        generateKeystoreTest();
+    }
+    public static void generateKeystoreTest(){
+         byte[][] keystore = ByteKeystore.generateRandomKeystore();
+         Print.println(keystore);
+    }
+    public static void hexEncryptionTest(){
+        ByteEncryption be = new ByteEncryption("");
+        String str = "example";
+        String encrypted = ByteArrayOperations.bytesToHex(be.encrypt(str.getBytes()));
+        System.out.println(encrypted);
+        String decrypted = new String(be.decrypt(ByteArrayOperations.hexToBytes(encrypted)));
+        System.out.println(decrypted);
+    }
+    public static void emptyPrivateKeyTest(){
+        ByteEncryption be = new ByteEncryption("");
+        System.out.println(be.hashString("This is a test"));
     }
     public static void hexTest(){
         ByteEncryption be = new ByteEncryption("Ì\u008Eñ°ã]¤èĊ\u007F>\u0084®)Ă\u008Dăé/\u0095\u0010\u000FĉehÀOf=t\u009C\u0014²ò©\u0019\u008F\u0087\u00170\u0086Û|²5¶a|Čû\u001C ßT¼ûÁy4flR·A");
@@ -96,7 +116,7 @@ public class EncrytionTests {
         Print.println(bytes);
     }
     public static void byteKeystoreTest(){
-        ByteKeystore.generateKeystore("./byteKeystore1.jhk");
+        ByteKeystore.printKeystore("./byteKeystore1.jhk");
     }
     public static void hashTest(){
         ByteEncryption be1 = new ByteEncryption("Ì\u008Eñ°ã]¤èĊ\u007F>\u0084®)Ă\u008Dăé/\u0095\u0010\u000FĉehÀOf=t\u009C\u0014²ò©\u0019\u008F\u0087\u00170\u0086Û|²5¶a|Čû\u001C ßT¼ûÁy4flR·A");
@@ -147,27 +167,26 @@ public class EncrytionTests {
         //        for(int i = 1000000; i<2000000; ++i){
 //            byte[] hash = be.hash(String.valueOf(i));
 //        }
-//        int counter = 2000001;
-//        NONCE: for (int i = 0 ;; ++i){
-//            --counter;
-//            byte[] hash = be.hash(str+i);
-//            for (int j = 0; j<18; j += 2){
-//                if (hash[j] > hash[j+1]){ // hash[j] != -94
-//                    if (counter <= 0){
-//                        counter = 2000000;
-//                        System.out.println(i);
-//                        System.out.println(((System.nanoTime()-start)/1000000.0)+" Milliseconds Elapsed");
-//                        Print.println(hash);
-//                    }
-//                    continue NONCE;
-//                }
-//            }
-//            System.out.println();
-//            System.out.println("Nonce:  "+i);
-//            Print.println(hash);
-//            System.out.println(ByteEncryption.bytesToUnicode(hash));
-//            break;
-//        }
+        int counter = 2000001;
+        NONCE: for (int i = 0 ;; ++i){
+            --counter;
+            byte[] hash = be.hash(str+Integer.toHexString(i));
+            if (hash[0] == Byte.MIN_VALUE && hash[1] == Byte.MAX_VALUE){
+                System.out.println();
+                System.out.println("Nonce:  "+i);
+                System.out.println("Hex:  "+Integer.toHexString(i));
+                Print.println(hash);
+                System.out.println(ByteArrayOperations.bytesToHex(hash));
+                break;
+            }
+            if (counter <= 0){
+                counter = 2000000;
+                System.out.println(Integer.toHexString(i));
+                System.out.println(((System.nanoTime()-start)/1000000.0)+" Milliseconds Elapsed");
+                Print.println(hash);
+                System.out.println(ByteArrayOperations.bytesToHex(hash));
+            }
+        }
         long end = System.nanoTime();
         System.out.println("Took "+((end-start)/1000000.0)+" Milliseconds");
     }

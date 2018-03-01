@@ -47,7 +47,7 @@ public class ByteEncryption {
         generateHashKey();
     }
     public ByteEncryption(String key){
-        this(unicodeToBytes(key));
+        this(unicodeToBytes(key.length() > 0 ? key : "default private key"));
     }
     public ByteEncryption(String key, String path){
         this(unicodeToBytes(key), IO.filereader(path));
