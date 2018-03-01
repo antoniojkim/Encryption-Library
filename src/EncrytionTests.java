@@ -85,10 +85,10 @@ public class EncrytionTests {
 //        Print.println(ByteEncryption.shiftLeft(new byte[]{1, 2, 3, 4}, -1));
 //        Print.println(ByteEncryption.shiftRight(new byte[][]{{1, 2, 3, 4}, {5, 6, 7, 8}}));
 //        emptyPrivateKeyTest();
-//        generateKeystoreTest();
+        generateKeystoreTest();
     }
     public static void generateKeystoreTest(){
-         byte[][] keystore = ByteKeystore.generateRandomKeystore();
+         byte[][] keystore = ByteKeystore.generateKeystore(null);
          Print.println(keystore);
     }
     public static void hexEncryptionTest(){
@@ -114,9 +114,6 @@ public class EncrytionTests {
         byte[] bytes = hexToBytes(hex);
         System.out.println(bytes.length);
         Print.println(bytes);
-    }
-    public static void byteKeystoreTest(){
-        ByteKeystore.printKeystore("./byteKeystore1.jhk");
     }
     public static void hashTest(){
         ByteEncryption be1 = new ByteEncryption("Ì\u008Eñ°ã]¤èĊ\u007F>\u0084®)Ă\u008Dăé/\u0095\u0010\u000FĉehÀOf=t\u009C\u0014²ò©\u0019\u008F\u0087\u00170\u0086Û|²5¶a|Čû\u001C ßT¼ûÁy4flR·A");

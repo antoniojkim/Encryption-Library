@@ -1,10 +1,5 @@
 package Byte_Encryption;
 
-import Tools.IO;
-
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -30,27 +25,20 @@ public class ByteEncryption {
     public ByteEncryption(byte... key){
         this(key, null);
     }
-    public ByteEncryption(byte[] key, BufferedReader br){
-        if (br == null){
-            try {
-                br = new BufferedReader(new InputStreamReader(getClass().getResourceAsStream("keystore.txt"), "UTF-8"));
-            } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
-            }
-        }
+    public ByteEncryption(byte[] key, String scrambler){
         this.key = key;
         this.hashKey = devectorize(key);
-        this.keystore = ByteKeystore.read(br);
+        this.keystore = ByteKeystore.generateKeystore(scrambler);
         mixKeyStore();
         generateRoundKeys();
         generateSubByteTable();
         generateHashKey();
     }
     public ByteEncryption(String key){
-        this(unicodeToBytes(key.length() > 0 ? key : "default private key"));
+        this(key, null);
     }
-    public ByteEncryption(String key, String path){
-        this(unicodeToBytes(key), IO.filereader(path));
+    public ByteEncryption(String key, String scrambler){
+        this(unicodeToBytes(key.length() > 0 ? key : "default private key"), scrambler);
     }
 
     private void mixKeyStore(){
