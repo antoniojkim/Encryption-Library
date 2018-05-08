@@ -9,7 +9,9 @@ The algorithm itself takes some passcode and utilizes a keystore to generate a k
 * There are over 10<sup>501</sup> possible keystores that can be randomly generated
    * Using the same passcode with different keystores would produce vastly different key.
    * Using different passcodes with the same keystore should produce vastly different key tables as well.
-* There is a built-in hashing algorithm that I designed. While it has not been proven, the algorithm can be treated to be "[perfect](https://en.wikipedia.org/wiki/Perfect_hash_function)" as the hash heavily relies on each specific character and the order in which the characters appear in the string.
+* There is a built-in hashing algorithm that I designed. It is theoretically not perfect as it produces 64-byte hashes for all inputs of any size. However, given how large the output size is, it can practically be treated to be perfect for all reasonable length inputs.
+* The encryption algorithm takes in an array of bytes and returns an array of bytes. If the input is a string, the algorithm will pre-process the string into an array of bytes, encrypt it, and then post-processes the resulting array of bytes using a bytes to tetrahexigesimal converter.
+* The decryption algorithm takes in an array of bytes and returns an array of bytes. If the input is a string, the algorithm will pre-process the string using the tetrahexigesimal to bytes converter, decrypt it, and uses the resulting array of bytes to reconstruct construct a string.
 
 The library features built-in RSA capabilities of theoretical arbitrary bit lengths (default 1024). This can be used to securely share some passcode so that one could efficiently and securely share data using the symmetric cipher.
 
